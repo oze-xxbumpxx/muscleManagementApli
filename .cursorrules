@@ -1,0 +1,252 @@
+# muscleManagementApli - Cursor Project Rules
+
+このプロジェクトは、筋力トレーニング管理アプリです。
+Google TypeScript Style Guide に準拠した厳格なコーディング規約を採用しています。
+
+---
+
+## AI協働ルール（最重要）
+
+### 基本方針
+- **手動実装が基本**：提案された実装は、開発者が手動でコーディングする
+- **自動実装の条件**：「実装を自動でお願いします」と明示的に依頼された場合のみ
+- **目的**：実際にコードを書くことでスキルアップを図る
+
+### AIの役割
+- 設計案・実装例の提案
+- コードレビューと改善提案
+- ベストプラクティス・現場での実践的な情報提供
+- 技術的な疑問への回答
+
+### レビュー観点
+- コードの可読性・保守性
+- TypeScript / Node.js のベストプラクティス
+- クリーンアーキテクチャの原則遵守
+- Google TypeScript Style Guide 準拠
+- セキュリティ・パフォーマンス
+
+---
+
+## TypeScript コーディング規約（Google準拠）
+
+### 絶対禁止（error レベル）
+
+#### 1. `any` の使用禁止
+```typescript
+// ❌ 禁止
+function process(data: any) { }
+
+// ✅ 正解：unknown を使う
+function process(data: unknown) {
+  if (isValidData(data)) {
+    // 型ガードで安全に処理
+  }
+}
+```
+
+#### 2. `as` 型アサーションの使用禁止
+```typescript
+// ❌ 禁止
+const user = data as User;
+
+// ✅ 正解：型ガードを使う
+if (isUser(data)) {
+  // data は User 型として安全
+}
+
+// ✅ 正解：Zodでバリデーション
+const user = userSchema.parse(data);
+```
+
+#### 3. `enum` の使用禁止
+```typescript
+// ❌ 禁止
+enum Status { Pending, Completed }
+
+// ✅ 正解：Union Type を使う
+type Status = 'pending' | 'completed';
+
+// ✅ 正解：const object
+const STATUS = {
+  PENDING: 'pending',
+  COMPLETED: 'completed',
+} as const;
+```
+
+### 必須ルール
+
+#### interface vs type
+```typescript
+// ✅ オブジェクト型は interface
+interface User {
+  id: number;
+  name: string;
+}
+
+// ✅ ユニオン型は type
+type Status = 'pending' | 'completed';
+```
+
+#### 型ガード関数
+```typescript
+// ✅ is + 型名 で命名
+function isUser(data: unknown): data is User {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'id' in data &&
+    'name' in data
+  );
+}
+```
+
+#### Zod バリデーション（推奨）
+```typescript
+import { z } from 'zod';
+
+const userSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+});
+
+type User = z.infer<typeof userSchema>;
+
+// バリデーション + 型推論
+const user = userSchema.parse(data);
+```
+
+---
+
+## 命名規約
+
+| 対象 | スタイル | 例 |
+|------|---------|-----|
+| 変数・関数 | camelCase | `userName`, `getUserById` |
+| クラス・型・interface | PascalCase | `User`, `TrainingSession` |
+| 定数 | UPPER_SNAKE_CASE | `MAX_COUNT`, `API_URL` |
+| ファイル（コンポーネント） | PascalCase.tsx | `TrainingList.tsx` |
+| ファイル（その他） | camelCase.ts | `userService.ts` |
+| 型ガード関数 | is + 型名 | `isUser`, `isTrainingSession` |
+| Boolean変数 | is/has/can/should | `isActive`, `hasPermission` |
+
+---
+
+## アーキテクチャ
+
+### バックエンド（クリーンアーキテクチャ）
+```
+Resolver → UseCase → Repository → DB
+```
+
+### フロントエンド（3層レイヤー）
+```
+UI (Components) → ViewModel (Hooks) → Data (Apollo/GraphQL)
+```
+
+### ディレクトリ構成（フロントエンド）
+```
+src/
+├── features/
+│   └── training/
+│       ├── components/     # UI層（PascalCase.tsx）
+│       ├── pages/          # ページ
+│       ├── hooks/          # ViewModel層
+│       ├── api/            # Data層
+│       ├── models/         # 型定義
+│       └── validation/     # Zod
+└── shared/
+    ├── components/
+    ├── hooks/
+    └── utils/
+```
+
+### ディレクトリ構成（バックエンド）
+```
+src/
+├── resolvers/          # GraphQL Resolver
+├── usecases/           # ビジネスロジック
+├── repositories/       # データアクセス
+├── models/             # Sequelize モデル
+├── types/              # 型定義
+└── config/             # 設定
+```
+
+---
+
+## 技術スタック
+
+### フロントエンド
+- React
+- TypeScript
+- GraphQL
+- Apollo Client
+- Zod
+
+### バックエンド
+- Node.js
+- TypeScript
+- GraphQL API
+- Sequelize
+
+### データベース
+- PostgreSQL
+
+### インフラ
+- Docker
+- docker-compose
+
+### テスト
+- Vitest
+- Testcontainers
+
+---
+
+## データベース設計
+
+### テーブル構成
+- `training_sessions`：トレーニングセッション（日付単位）
+- `exercises`：エクササイズ（種目詳細）
+
+### 主な特徴
+- 自重トレーニングに最適化
+- 回数ベース（reps）と時間ベース（duration_seconds）の両対応
+- 体重推移の記録（body_weight）
+- ON DELETE CASCADE
+
+---
+
+## 参照ドキュメント
+
+詳細は以下のドキュメントを参照：
+
+- `docs/CODING_STANDARDS.md` - コーディング規約詳細
+- `docs/ARCHITECTURE.md` - アーキテクチャ設計
+- `docs/DATABASE_DESIGN.md` - データベース設計
+- `docs/REQUIREMENTS.md` - 要件定義
+- `AI_COLLABORATION_RULES.md` - AI協働ルール
+
+---
+
+## ESLint設定（Google準拠）
+
+```json
+{
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/consistent-type-assertions": ["error", { "assertionStyle": "never" }],
+    "@typescript-eslint/no-unsafe-assignment": "error",
+    "@typescript-eslint/no-unsafe-member-access": "error",
+    "@typescript-eslint/no-unsafe-call": "error",
+    "@typescript-eslint/no-unsafe-return": "error"
+  }
+}
+```
+
+---
+
+## 開発者情報
+
+- 経験年数：4年5ヶ月
+- 目標：圧倒的なスキルアップ
+- 学習スタイル：手を動かしながら学ぶ
+- レビュー期待値：改善点を多く指摘してほしい

@@ -1,0 +1,47 @@
+# muscleManagementApli - Docker Compose Configuration
+# PostgreSQL + Development Environment
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: muscle-app-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: muscle_user
+      POSTGRES_PASSWORD: muscle_password
+      POSTGRES_DB: muscle_management
+      TZ: Asia/Tokyo
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U muscle_user -d muscle_management"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL for Testing (Testcontainers alternative)
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: muscle-app-postgres-test
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: muscle_management_test
+      TZ: Asia/Tokyo
+    # No volume - data is ephemeral for tests
+
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  default:
+    name: muscle-app-network
