@@ -362,15 +362,20 @@ interface TrainingSession {
 }
 
 function isTrainingSession(data: unknown): data is TrainingSession {
+  if (
+    typeof data !== 'object' ||
+    data === null ||
+    !('id' in data) ||
+    !('date' in data) ||
+    !('exercises' in data)
+  ) {
+    return false;
+  }
+  const record = data as Record<string, unknown>;
   return (
-    typeof data === 'object' &&
-    data !== null &&
-    'id' in data &&
-    'date' in data &&
-    'exercises' in data &&
-    typeof (data as any).id === 'number' &&
-    (data as any).date instanceof Date &&
-    Array.isArray((data as any).exercises)
+    typeof record['id'] === 'number' &&
+    record['date'] instanceof Date &&
+    Array.isArray(record['exercises'])
   );
 }
 

@@ -505,24 +505,36 @@ ORDER BY count DESC;
 ### 同一種目の連続実施回数
 
 ```sql
-WITH ranked_exercises AS (
-  SELECT 
-    ts.date,
-    e.exercise_name,
-    ROW_NUMBER() OVER (ORDER BY ts.date DESC) as rn
-  FROM exercises e
-  JOIN training_sessions ts ON e.training_session_id = ts.id
-  WHERE e.exercise_name = 'プッシュアップ'
+-- 直近のトレーニングセッションから連続で特定種目を実施した回数を計算
+WITH ranked_sessions AS (
+  -- 全セッションに連番を付与（最新が1）
+  SELECT
+    id,
+    date,
+    ROW_NUMBER() OVER (ORDER BY date DESC) as session_rank
+  FROM training_sessions
+),
+sessions_with_exercise AS (
+  -- 対象種目を含むセッションにフラグを付与
+  SELECT
+    rs.session_rank,
+    CASE WHEN e.id IS NOT NULL THEN 1 ELSE 0 END as has_exercise
+  FROM ranked_sessions rs
+  LEFT JOIN exercises e
+    ON e.training_session_id = rs.id
+    AND e.exercise_name = 'プッシュアップ'
+),
+streak_break AS (
+  -- 最初に種目が実施されなかったセッションを検出
+  SELECT MIN(session_rank) as break_point
+  FROM sessions_with_exercise
+  WHERE has_exercise = 0
 )
-SELECT 
-  exercise_name,
-  COUNT(*) as consecutive_count
-FROM ranked_exercises
-WHERE rn = (
-  SELECT MIN(rn) 
-  FROM ranked_exercises
-)
-GROUP BY exercise_name;
+SELECT
+  COALESCE(
+    (SELECT break_point - 1 FROM streak_break),
+    (SELECT COUNT(*) FROM sessions_with_exercise WHERE has_exercise = 1)
+  ) as consecutive_count;
 ```
 
 **用途**：種目履歴可視化、マンネリ化アラート
