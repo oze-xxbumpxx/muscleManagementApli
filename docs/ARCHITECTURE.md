@@ -78,12 +78,19 @@ muscleManagementApli - システムアーキテクチャ
 │                 │                          │
 │  ┌──────────────▼──────────────────────┐   │
 │  │  UseCase Layer                      │   │
-│  │  - Business Logic                   │   │
+│  │  - Application Logic                │   │
 │  └──────────────┬──────────────────────┘   │
 │                 │                          │
 │  ┌──────────────▼──────────────────────┐   │
-│  │  Repository Layer                   │   │
-│  │  - Data Access                      │   │
+│  │  Domain Layer                       │   │
+│  │  - Entity / Value Object            │   │
+│  │  - Domain Service                   │   │
+│  └──────────────┬──────────────────────┘   │
+│                 ↑                          │
+│  ┌──────────────┴──────────────────────┐   │
+│  │  Infrastructure Layer               │   │
+│  │  - Repository Implementation        │   │
+│  │  - Sequelize Model                  │   │
 │  └──────────────┬──────────────────────┘   │
 └─────────────────┼──────────────────────────┘
                   │ Sequelize
@@ -107,8 +114,10 @@ muscleManagementApli - システムアーキテクチャ
 ### レイヤー構成
 
 ```
-Resolver → UseCase → Repository → DB
+Resolver → UseCase → Domain ← Infrastructure → DB
 ```
+
+**依存の方向**：外側 → 内側（Domain層は何にも依存しない）
 
 #### 1. Resolver Layer
 - **責務**：GraphQL リクエスト/レスポンスの変換
@@ -119,20 +128,98 @@ Resolver → UseCase → Repository → DB
     - レスポンスの整形
 
 #### 2. UseCase Layer
-- **責務**：ビジネスロジック
-- **依存**：Repository
+
+- **責務**：アプリケーションロジック（ユースケースの調整）
+- **依存**：Domain, Repository Interface
 - **役割**：
-    - ドメインロジックの実装
+    - ユースケースのオーケストレーション
     - トランザクション管理
     - 複数Repositoryの組み合わせ
 
-#### 3. Repository Layer
-- **責務**：データアクセス
-- **依存**：Sequelize Model
+#### 3. Domain Layer（中心）
+
+- **責務**：ビジネスルール・ドメインロジック
+- **依存**：なし（純粋なTypeScript）
 - **役割**：
-    - CRUD操作
-    - クエリの抽象化
-    - データの永続化
+    - エンティティ（TrainingSession, Exercise）
+    - 値オブジェクト（Reps, Duration, ExerciseName）
+    - ドメインサービス（StreakCalculationService）
+    - リポジトリインターフェース定義
+
+```typescript
+// エンティティの例
+export class TrainingSession {
+  private constructor(private props: TrainingSessionProps) {}
+
+  static create(props: Omit<TrainingSessionProps, 'id'>): TrainingSession {
+    // バリデーション・ビジネスルール
+    return new TrainingSession(props);
+  }
+
+  addExercise(exercise: Exercise): void {
+    // ドメインロジック
+    this.props.exercises.push(exercise);
+  }
+}
+
+// 値オブジェクトの例
+export class Reps {
+  private constructor(private readonly value: number) {}
+
+  static create(value: number): Reps {
+    if (value < 1 || value > 9999) {
+      throw new Error('Reps must be between 1 and 9999');
+    }
+    return new Reps(value);
+  }
+
+  getValue(): number { return this.value; }
+  equals(other: Reps): boolean { return this.value === other.value; }
+}
+```
+
+#### 4. Infrastructure Layer
+
+- **責務**：外部システムとの接続
+- **依存**：Domain（インターフェース実装）
+- **役割**：
+    - Sequelizeモデル定義
+    - リポジトリ実装（Domain層のインターフェースを実装）
+    - 外部API接続
+
+### バックエンドディレクトリ構成
+
+```
+backend/src/
+├── domain/                    ← ビジネスロジックの中心
+│   ├── entities/              ← エンティティ
+│   │   ├── TrainingSession.ts
+│   │   └── Exercise.ts
+│   ├── valueObjects/          ← 値オブジェクト
+│   │   ├── Reps.ts
+│   │   ├── Duration.ts
+│   │   └── ExerciseName.ts
+│   ├── services/              ← ドメインサービス
+│   │   └── StreakCalculationService.ts
+│   └── repositories/          ← リポジトリインターフェース
+│       └── ITrainingSessionRepository.ts
+├── infrastructure/            ← 外部システム接続
+│   ├── sequelize/
+│   │   ├── models/            ← Sequelizeモデル
+│   │   │   ├── TrainingSessionModel.ts
+│   │   │   └── ExerciseModel.ts
+│   │   └── repositories/      ← リポジトリ実装
+│   │       └── TrainingSessionRepository.ts
+│   └── config/
+│       └── database.ts
+├── usecases/                  ← アプリケーションロジック
+│   ├── RecordTrainingUseCase.ts
+│   └── GetTrainingHistoryUseCase.ts
+├── resolvers/                 ← GraphQL エントリーポイント
+│   └── trainingResolver.ts
+└── types/                     ← 共通型定義
+    └── index.ts
+```
 
 ---
 

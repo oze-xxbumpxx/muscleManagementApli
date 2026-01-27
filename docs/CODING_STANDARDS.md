@@ -1075,6 +1075,252 @@ export const trainingSessionResolver = {
 
 ---
 
+## Domain層 実装規約
+
+### 1. エンティティ（Entity）
+
+**定義**：一意のIDを持ち、ライフサイクルを通じて同一性を保つオブジェクト
+
+```typescript
+// ✅ Good: ファクトリメソッドでバリデーション
+interface TrainingSessionProps {
+  id?: number;
+  date: Date;
+  bodyWeight?: number;
+  exercises: Exercise[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export class TrainingSession {
+  private constructor(private readonly props: TrainingSessionProps) {}
+
+  // ファクトリメソッド（バリデーション付き）
+  static create(props: Omit<TrainingSessionProps, 'id' | 'createdAt' | 'updatedAt'>): TrainingSession {
+    if (!props.date) {
+      throw new Error('Date is required');
+    }
+    if (props.exercises.length === 0) {
+      throw new Error('At least one exercise is required');
+    }
+    return new TrainingSession(props);
+  }
+
+  // 再構築用（DBからの復元）
+  static reconstruct(props: TrainingSessionProps): TrainingSession {
+    return new TrainingSession(props);
+  }
+
+  // Getter（イミュータブル）
+  get id(): number | undefined { return this.props.id; }
+  get date(): Date { return this.props.date; }
+  get bodyWeight(): number | undefined { return this.props.bodyWeight; }
+  get exercises(): ReadonlyArray<Exercise> { return [...this.props.exercises]; }
+
+  // ドメインロジック
+  addExercise(exercise: Exercise): void {
+    this.props.exercises.push(exercise);
+  }
+
+  getTotalVolume(): number {
+    return this.props.exercises.reduce((sum, ex) => sum + ex.getVolume(), 0);
+  }
+}
+```
+
+**ルール**：
+
+- コンストラクタは `private`
+- `create()` ファクトリメソッドでバリデーション
+- `reconstruct()` でDB復元（バリデーションなし）
+- Getter は防御的コピーを返す
+
+---
+
+### 2. 値オブジェクト（Value Object）
+
+**定義**：IDを持たず、属性の値で等価性を判断するイミュータブルなオブジェクト
+
+```typescript
+// ✅ Good: イミュータブル + バリデーション
+export class Reps {
+  private constructor(private readonly value: number) {}
+
+  static create(value: number): Reps {
+    if (!Number.isInteger(value)) {
+      throw new Error('Reps must be an integer');
+    }
+    if (value < 1 || value > 9999) {
+      throw new Error('Reps must be between 1 and 9999');
+    }
+    return new Reps(value);
+  }
+
+  getValue(): number {
+    return this.value;
+  }
+
+  equals(other: Reps): boolean {
+    return this.value === other.value;
+  }
+
+  add(other: Reps): Reps {
+    return Reps.create(this.value + other.value);
+  }
+}
+
+// ✅ Good: 時間ベースの値オブジェクト
+export class Duration {
+  private constructor(private readonly seconds: number) {}
+
+  static fromSeconds(seconds: number): Duration {
+    if (seconds < 0 || seconds > 86400) {
+      throw new Error('Duration must be between 0 and 86400 seconds');
+    }
+    return new Duration(seconds);
+  }
+
+  static fromMinutes(minutes: number): Duration {
+    return Duration.fromSeconds(minutes * 60);
+  }
+
+  getSeconds(): number { return this.seconds; }
+  getMinutes(): number { return Math.floor(this.seconds / 60); }
+
+  equals(other: Duration): boolean {
+    return this.seconds === other.seconds;
+  }
+}
+```
+
+**ルール**：
+
+- 完全にイミュータブル（`readonly`）
+- `equals()` メソッドで等価性判断
+- 演算メソッドは新しいインスタンスを返す
+- バリデーションはファクトリメソッドで実施
+
+---
+
+### 3. ドメインサービス（Domain Service）
+
+**定義**：単一のエンティティに属さないビジネスロジック
+
+```typescript
+// ✅ Good: 複数エンティティにまたがるロジック
+export class StreakCalculationService {
+  calculateStreak(sessions: ReadonlyArray<TrainingSession>): number {
+    if (sessions.length === 0) return 0;
+
+    const sortedDates = sessions
+      .map(s => s.date)
+      .sort((a, b) => b.getTime() - a.getTime());
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 今日または昨日にトレーニングしていない場合はストリーク0
+    const latestDate = new Date(sortedDates[0]);
+    latestDate.setHours(0, 0, 0, 0);
+
+    const daysDiff = Math.floor((today.getTime() - latestDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysDiff > 1) return 0;
+
+    // 連続日数をカウント
+    let streak = 1;
+    for (let i = 1; i < sortedDates.length; i++) {
+      const current = new Date(sortedDates[i - 1]);
+      const prev = new Date(sortedDates[i]);
+      current.setHours(0, 0, 0, 0);
+      prev.setHours(0, 0, 0, 0);
+
+      const diff = Math.floor((current.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
+      if (diff === 1) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    return streak;
+  }
+}
+```
+
+**ルール**：
+
+- エンティティに属さないビジネスロジックのみ
+- 状態を持たない（ステートレス）
+- 依存は Domain 層内のみ
+
+---
+
+### 4. リポジトリインターフェース
+
+**定義**：永続化の抽象化（Domain層で定義、Infrastructure層で実装）
+
+```typescript
+// domain/repositories/ITrainingSessionRepository.ts
+
+// ✅ Good: Domain層でインターフェース定義
+export interface ITrainingSessionRepository {
+  findById(id: number): Promise<TrainingSession | null>;
+  findByDateRange(startDate: Date, endDate: Date): Promise<TrainingSession[]>;
+  findLatest(limit: number): Promise<TrainingSession[]>;
+  save(session: TrainingSession): Promise<TrainingSession>;
+  delete(id: number): Promise<void>;
+  exists(id: number): Promise<boolean>;
+}
+
+// infrastructure/sequelize/repositories/TrainingSessionRepository.ts
+
+// ✅ Good: Infrastructure層で実装
+export class TrainingSessionRepository implements ITrainingSessionRepository {
+  async findById(id: number): Promise<TrainingSession | null> {
+    const model = await TrainingSessionModel.findByPk(id, {
+      include: [{ model: ExerciseModel, as: 'exercises' }],
+    });
+
+    if (!model) return null;
+
+    // Sequelize Model → Domain Entity に変換
+    return this.toDomainEntity(model);
+  }
+
+  async save(session: TrainingSession): Promise<TrainingSession> {
+    // Domain Entity → Sequelize Model に変換して保存
+    const data = this.toSequelizeData(session);
+    const model = await TrainingSessionModel.create(data);
+    return this.toDomainEntity(model);
+  }
+
+  private toDomainEntity(model: TrainingSessionModel): TrainingSession {
+    return TrainingSession.reconstruct({
+      id: model.id,
+      date: model.date,
+      bodyWeight: model.bodyWeight,
+      exercises: model.exercises.map(e => Exercise.reconstruct({
+        id: e.id,
+        exerciseName: e.exerciseName,
+        reps: e.reps ? Reps.create(e.reps) : undefined,
+        durationSeconds: e.durationSeconds ? Duration.fromSeconds(e.durationSeconds) : undefined,
+        sets: e.sets,
+      })),
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    });
+  }
+}
+```
+
+**ルール**：
+
+- インターフェースは Domain 層に配置
+- 実装は Infrastructure 層に配置
+- Domain Entity ↔ ORM Model の変換はリポジトリ実装で行う
+
+---
+
 ## GraphQL 規約
 
 ### 1. スキーマ命名

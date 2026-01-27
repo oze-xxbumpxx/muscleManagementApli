@@ -30,12 +30,20 @@
 
 ## アーキテクチャ
 
-### バックエンド（クリーンアーキテクチャ）
+### バックエンド（クリーンアーキテクチャ + DDD）
+
 ```
-Resolver → UseCase → Repository → DB
+Resolver → UseCase → Domain ← Infrastructure → DB
 ```
 
+**依存の方向**：外側 → Domain（中心）
+
+- **Domain層**：エンティティ、値オブジェクト、ドメインサービス、リポジトリIF
+- **UseCase層**：アプリケーションロジック（ユースケースの調整）
+- **Infrastructure層**：Sequelizeモデル、リポジトリ実装
+
 ### フロントエンド（3層分離）
+
 ```
 UI Layer → ViewModel Hook → Data Hook (Apollo) → GraphQL API
 ```
