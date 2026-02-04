@@ -24,76 +24,76 @@ scalar DateTime
 トレーニングセッション（日付単位の記録）
 """
 type TrainingSession {
-  id: ID!
-  date: Date!
-  bodyWeight: Float
-  notes: String
-  exercises: [Exercise!]!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+    id: ID!
+    date: Date!
+    bodyWeight: Float
+    notes: String
+    exercises: [Exercise!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
 }
 
 """
 エクササイズ（種目の詳細）
 """
 type Exercise {
-  id: ID!
-  exerciseName: String!
-  weight: Float
-  reps: Int
-  durationSeconds: Int
-  sets: Int!
-  order: Int!
-  notes: String
-  createdAt: DateTime!
-  updatedAt: DateTime!
+    id: ID!
+    exerciseName: String!
+    weight: Float
+    reps: Int
+    durationSeconds: Int
+    sets: Int!
+    order: Int!
+    notes: String
+    createdAt: DateTime!
+    updatedAt: DateTime!
 }
 
 """
 種目の履歴（成長グラフ用）
 """
 type ExerciseHistory {
-  date: Date!
-  exerciseName: String!
-  weight: Float
-  reps: Int
-  durationSeconds: Int
-  sets: Int!
-  bodyWeight: Float
+    date: Date!
+    exerciseName: String!
+    weight: Float
+    reps: Int
+    durationSeconds: Int
+    sets: Int!
+    bodyWeight: Float
 }
 
 """
 種目の出現回数（直近N回の集計）
 """
 type ExerciseFrequency {
-  exerciseName: String!
-  count: Int!
+    exerciseName: String!
+    count: Int!
 }
 
 """
 ストリーク情報（継続可視化）
 """
 type StreakInfo {
-  currentStreak: Int!
-  longestStreak: Int!
-  thisMonthCount: Int!
-  totalCount: Int!
+    currentStreak: Int!
+    longestStreak: Int!
+    thisMonthCount: Int!
+    totalCount: Int!
 }
 
 """
 カレンダー用のトレーニング日データ
 """
 type TrainingDay {
-  date: Date!
-  exerciseCount: Int!
+    date: Date!
+    exerciseCount: Int!
 }
 
 """
 削除操作の結果
 """
 type DeleteResult {
-  success: Boolean!
-  deletedId: ID!
+    success: Boolean!
+    deletedId: ID!
 }
 
 # -----------------------------------------------------------------------------
@@ -104,19 +104,19 @@ type DeleteResult {
 トレーニングセッション作成用Input
 """
 input CreateTrainingSessionInput {
-  date: Date!
-  bodyWeight: Float
-  notes: String
-  exercises: [CreateExerciseInput!]!
+    date: Date!
+    bodyWeight: Float
+    notes: String
+    exercises: [CreateExerciseInput!]!
 }
 
 """
 トレーニングセッション更新用Input
 """
 input UpdateTrainingSessionInput {
-  date: Date
-  bodyWeight: Float
-  notes: String
+    date: Date
+    bodyWeight: Float
+    notes: String
 }
 
 """
@@ -124,25 +124,25 @@ input UpdateTrainingSessionInput {
 注意: reps と durationSeconds は排他的（どちらか1つのみ指定）
 """
 input CreateExerciseInput {
-  exerciseName: String!
-  weight: Float
-  reps: Int
-  durationSeconds: Int
-  sets: Int!
-  order: Int
-  notes: String
+    exerciseName: String!
+    weight: Float
+    reps: Int
+    durationSeconds: Int
+    sets: Int!
+    order: Int
+    notes: String
 }
 
 """
 エクササイズ更新用Input
 """
 input UpdateExerciseInput {
-  exerciseName: String
-  weight: Float
-  reps: Int
-  durationSeconds: Int
-  sets: Int
-  notes: String
+    exerciseName: String
+    weight: Float
+    reps: Int
+    durationSeconds: Int
+    sets: Int
+    notes: String
 }
 
 # -----------------------------------------------------------------------------
@@ -150,50 +150,50 @@ input UpdateExerciseInput {
 # -----------------------------------------------------------------------------
 
 type Query {
-  """
-  トレーニングセッション一覧取得（日付降順）
-  """
-  trainingSessions(limit: Int = 20, offset: Int = 0): [TrainingSession!]!
+    """
+    トレーニングセッション一覧取得（日付降順）
+    """
+    trainingSessions(limit: Int = 20, offset: Int = 0): [TrainingSession!]!
 
-  """
-  特定のトレーニングセッション取得
-  """
-  trainingSession(id: ID!): TrainingSession
+    """
+    特定のトレーニングセッション取得
+    """
+    trainingSession(id: ID!): TrainingSession
 
-  """
-  日付でトレーニングセッション取得
-  """
-  trainingSessionByDate(date: Date!): TrainingSession
+    """
+    日付でトレーニングセッション取得
+    """
+    trainingSessionByDate(date: Date!): TrainingSession
 
-  """
-  種目の履歴取得（成長グラフ用）
-  """
-  exerciseHistory(exerciseName: String!, limit: Int = 30): [ExerciseHistory!]!
+    """
+    種目の履歴取得（成長グラフ用）
+    """
+    exerciseHistory(exerciseName: String!, limit: Int = 30): [ExerciseHistory!]!
 
-  """
-  直近N回のトレーニングで実施した種目の頻度
-  """
-  recentExerciseFrequency(sessionCount: Int = 5): [ExerciseFrequency!]!
+    """
+    直近N回のトレーニングで実施した種目の頻度
+    """
+    recentExerciseFrequency(sessionCount: Int = 5): [ExerciseFrequency!]!
 
-  """
-  特定種目の連続実施回数
-  """
-  exerciseConsecutiveCount(exerciseName: String!): Int!
+    """
+    特定種目の連続実施回数
+    """
+    exerciseConsecutiveCount(exerciseName: String!): Int!
 
-  """
-  ストリーク情報取得
-  """
-  streakInfo: StreakInfo!
+    """
+    ストリーク情報取得
+    """
+    streakInfo: StreakInfo!
 
-  """
-  指定月のトレーニング日一覧（カレンダー用）
-  """
-  trainingDaysInMonth(year: Int!, month: Int!): [TrainingDay!]!
+    """
+    指定月のトレーニング日一覧（カレンダー用）
+    """
+    trainingDaysInMonth(year: Int!, month: Int!): [TrainingDay!]!
 
-  """
-  全種目名の一覧（オートコンプリート用）
-  """
-  exerciseNames: [String!]!
+    """
+    全種目名の一覧（オートコンプリート用）
+    """
+    exerciseNames: [String!]!
 }
 
 # -----------------------------------------------------------------------------
@@ -201,38 +201,38 @@ type Query {
 # -----------------------------------------------------------------------------
 
 type Mutation {
-  """
-  トレーニングセッション作成（エクササイズも同時作成）
-  """
-  createTrainingSession(input: CreateTrainingSessionInput!): TrainingSession!
+    """
+    トレーニングセッション作成（エクササイズも同時作成）
+    """
+    createTrainingSession(input: CreateTrainingSessionInput!): TrainingSession!
 
-  """
-  トレーニングセッション更新（基本情報のみ）
-  """
-  updateTrainingSession(id: ID!, input: UpdateTrainingSessionInput!): TrainingSession!
+    """
+    トレーニングセッション更新（基本情報のみ）
+    """
+    updateTrainingSession(id: ID!, input: UpdateTrainingSessionInput!): TrainingSession!
 
-  """
-  トレーニングセッション削除（関連エクササイズも削除）
-  """
-  deleteTrainingSession(id: ID!): DeleteResult!
+    """
+    トレーニングセッション削除（関連エクササイズも削除）
+    """
+    deleteTrainingSession(id: ID!): DeleteResult!
 
-  """
-  エクササイズ追加（既存セッションに）
-  """
-  addExercise(trainingSessionId: ID!, input: CreateExerciseInput!): Exercise!
+    """
+    エクササイズ追加（既存セッションに）
+    """
+    addExercise(trainingSessionId: ID!, input: CreateExerciseInput!): Exercise!
 
-  """
-  エクササイズ更新
-  """
-  updateExercise(id: ID!, input: UpdateExerciseInput!): Exercise!
+    """
+    エクササイズ更新
+    """
+    updateExercise(id: ID!, input: UpdateExerciseInput!): Exercise!
 
-  """
-  エクササイズ削除
-  """
-  deleteExercise(id: ID!): DeleteResult!
+    """
+    エクササイズ削除
+    """
+    deleteExercise(id: ID!): DeleteResult!
 
-  """
-  エクササイズの並び順を更新
-  """
-  reorderExercises(trainingSessionId: ID!, exerciseIds: [ID!]!): [Exercise!]!
+    """
+    エクササイズの並び順を更新
+    """
+    reorderExercises(trainingSessionId: ID!, exerciseIds: [ID!]!): [Exercise!]!
 }

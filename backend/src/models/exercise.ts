@@ -1,13 +1,17 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from "sequelize";
+import {
+    CreationOptional,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    Sequelize,
+} from 'sequelize';
 
 /**
  * Exercise モデル
  * トレーニングセッション（日付単位の記録）内のエクササイズ
  */
-class Exercise extends Model<
-    InferAttributes<Exercise>,
-    InferCreationAttributes<Exercise>
-    > {
+class Exercise extends Model<InferAttributes<Exercise>, InferCreationAttributes<Exercise>> {
     // カラム定義
     declare id: CreationOptional<number>;
     declare trainingSessionId: number;
@@ -20,7 +24,7 @@ class Exercise extends Model<
     declare notes: string | null;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
-    }
+}
 
 /**
  * モデル初期化関数
@@ -41,14 +45,14 @@ function initExercise(sequelize: Sequelize): typeof Exercise {
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
-                onUpdate: 'CASCADE', 
+                onUpdate: 'CASCADE',
             },
             exerciseName: {
                 type: DataTypes.STRING(255),
                 allowNull: false,
             },
             weight: {
-                type: DataTypes.DECIMAL(5,2),
+                type: DataTypes.DECIMAL(5, 2),
                 allowNull: true,
             },
             reps: {
@@ -89,4 +93,4 @@ function initExercise(sequelize: Sequelize): typeof Exercise {
     );
     return Exercise;
 }
-export { initExercise, Exercise};
+export { initExercise, Exercise };

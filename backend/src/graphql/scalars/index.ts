@@ -5,8 +5,8 @@ import { DateTimeScalar } from './dateTime';
  * カスタムスカラーリゾルバー
  */
 export const scalarResolvers = {
-  Date: DateScalar,
-  DateTime: DateTimeScalar,
+    Date: DateScalar,
+    DateTime: DateTimeScalar,
 };
 
 export { DateScalar, DateTimeScalar };

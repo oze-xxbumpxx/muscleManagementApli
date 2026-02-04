@@ -441,6 +441,122 @@ backend/src/
 
 ---
 
+## 2026-02-01
+
+### Sequelizeモデル実装完了・マイグレーション実行
+
+#### やったこと
+
+1. **Sequelizeモデル作成（手動コーディング）**
+   - `trainingSession.ts` - TrainingSessionモデル定義
+   - `exercise.ts` - Exerciseモデル定義
+   - `models/index.ts` - モデル初期化・リレーション設定
+
+2. **リレーション設定**
+   - `TrainingSession.hasMany(Exercise)` - 1対多
+   - `Exercise.belongsTo(TrainingSession)` - 多対1
+   - `ON DELETE CASCADE` をモデル層でも明示
+
+3. **マイグレーション実行**
+   - `npx sequelize-cli db:migrate`
+   - `training_sessions` テーブル作成
+   - `exercises` テーブル作成
+
+4. **環境変数管理**
+   - `.env` ファイルでDB接続情報を管理
+   - セキュリティ・環境切り替えに対応
+
+#### 学んだこと
+
+##### 循環参照（Circular Dependency）の回避
+
+- **問題**：各モデルファイルでリレーションを設定すると循環参照が発生
+  ```
+  trainingSession.ts → import Exercise
+  exercise.ts → import TrainingSession
+  → 無限ループ
+  ```
+
+- **解決**：`index.ts` で一箇所にリレーション設定を集約
+  ```
+  index.ts
+  ├── import TrainingSession
+  ├── import Exercise
+  └── リレーション設定（一方向の依存のみ）
+  ```
+
+##### 単一責任の原則（SRP）によるファイル分割
+
+| ファイル | 責任 |
+|----------|------|
+| `trainingSession.ts` | モデル**定義** |
+| `exercise.ts` | モデル**定義** |
+| `index.ts` | **初期化・統合・エクスポート** |
+
+- 各ファイルが1つのことに集中
+- Sequelize公式・多くの企業プロジェクトで採用されているパターン
+
+##### 初期化順序の重要性
+
+```typescript
+// 必ずこの順序で実行
+1. initTrainingSession(sequelize);  // 親モデル
+2. initExercise(sequelize);         // 子モデル
+3. TrainingSession.hasMany(...);    // リレーション
+4. Exercise.belongsTo(...);
+```
+
+- 各ファイルに分散すると読み込み順序が保証できない
+- `index.ts` で順序を明示的に制御
+
+##### 環境変数管理のベストプラクティス
+
+| 理由 | 説明 |
+|------|------|
+| セキュリティ | パスワード等をコードに含めない |
+| 環境切り替え | 開発/本番で設定を変更可能 |
+| Git管理外 | `.gitignore` で除外 |
+
+- `.env.example` を用意するとチームメンバーに親切
+
+##### Sequelizeモデル定義のポイント
+
+- **`DataTypes.DATEONLY`** の返却型は `string`（Dateではない）
+- **`references`** で外部キー制約を定義
+- **`underscored: true`** でスネークケースに自動変換
+- **`CreationOptional<T>`** で自動生成カラムを表現
+
+#### 作成されたファイル構造
+
+```
+backend/src/models/
+├── index.ts           # 初期化・リレーション・エクスポート
+├── trainingSession.ts # TrainingSessionモデル定義
+└── exercise.ts        # Exerciseモデル定義
+```
+
+#### 次のステップ
+
+1. **Repository層実装**
+   - `domain/repositories/` - インターフェース定義
+   - `infrastructure/sequelize/repositories/` - 実装
+
+2. **UseCase層実装**
+   - ビジネスロジックの実装
+
+3. **Resolver層実装**
+   - GraphQL Resolverの実装
+   - Zodバリデーション
+
+#### 今日の振り返り
+- ✅ Sequelizeモデルを手動コーディングし、ORMの仕組みを理解
+- ✅ 循環参照の問題と解決方法を学んだ
+- ✅ 単一責任の原則の実践的な適用例を体験
+- ✅ マイグレーション実行でDBテーブルが作成された
+- ✅ 環境変数管理でセキュリティベストプラクティスを実践
+
+---
+
 ## 学習メモテンプレート
 
 ### YYYY-MM-DD

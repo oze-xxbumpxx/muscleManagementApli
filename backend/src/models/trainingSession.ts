@@ -1,4 +1,11 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from "sequelize";
+import {
+    CreationOptional,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    Sequelize,
+} from 'sequelize';
 
 // import type { Exercise } from './exercise';
 /**
@@ -22,7 +29,7 @@ class TrainingSession extends Model<
 
     // 静的メソッド（リレーション設定用）（後で追加）
     // static associate(models: { Exercise: typeof Exercise}) :void {
-        // hasManyを設定（後で追加）
+    // hasManyを設定（後で追加）
     // }
 }
 
