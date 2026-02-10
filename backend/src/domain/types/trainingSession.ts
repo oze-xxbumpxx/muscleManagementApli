@@ -33,4 +33,11 @@ export interface TrainingSessionStreakSummary {
   currentStreak: number;
   longestStreak: number;
   lastTrainingDate: string | null;
+  thisMonthCount: number;
+  totalCount: number;
+}
+
+export interface TrainingSessionDeleteResult {
+  success: boolean;
+  deletedId: number | null;
 }

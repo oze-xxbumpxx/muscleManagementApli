@@ -56,3 +56,18 @@ export interface ExerciseHistoryResult {
   totalCount: number;
   items: ExerciseHistoryItem[];
 }
+
+export interface ExerciseListQuery {
+  limit: number;
+  offset: number;
+}
+
+export interface ExerciseListResult {
+  totalCount: number;
+  items: Exercise[];
+}
+
+export interface ExerciseDeleteResult {
+  success: boolean;
+  deletedId: number | null;
+}
