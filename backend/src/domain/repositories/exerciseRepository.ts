@@ -1,3 +1,4 @@
+import { Transaction } from 'sequelize';
 import type {
   Exercise,
   ExerciseCreateInput,
@@ -9,8 +10,8 @@ import type {
 
 export interface IExerciseRepository {
   // Create
-  create(input: ExerciseCreateInput): Promise<Exercise>;
-  createMany(inputs: ExerciseCreateInput[]): Promise<Exercise[]>;
+  create(input: ExerciseCreateInput, transaction?: Transaction): Promise<Exercise>;
+  createMany(inputs: ExerciseCreateInput[], transaction?: Transaction): Promise<Exercise[]>;
 
   // Read
   findById(id: number): Promise<Exercise | null>;

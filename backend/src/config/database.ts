@@ -37,7 +37,12 @@ function createSequelizeInstance(): Sequelize {
         database: config.database,
         username: config.username,
         password: config.password,
-        logging: process.env['NODE_ENV'] === 'development' ? console.log : false,
+        logging:
+            process.env['NODE_ENV'] === 'development'
+                ? (message: string): void => {
+                      console.warn(message);
+                  }
+                : false,
         define: {
             underscored: true, // snake_case でカラム名を生成
             timestamps: true, // createdAt, updatedAt を自動管理
@@ -54,7 +59,7 @@ export const sequelize = createSequelizeInstance();
 export async function testConnection(): Promise<void> {
     try {
         await sequelize.authenticate();
-        console.log('✅ Database connection established successfully.');
+        console.warn('✅ Database connection established successfully.');
     } catch (error) {
         console.error('❌ Unable to connect to the database:', error);
         throw error;

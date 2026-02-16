@@ -23,8 +23,9 @@ export const DateScalar = new GraphQLScalarType({
             }
             // ISO 8601形式の場合は日付部分を抽出
             const dateMatch = value.match(/^\d{4}-\d{2}-\d{2}/);
-            if (dateMatch?.[0]) {
-                return dateMatch[0];
+            const matchedDate = dateMatch?.[0];
+            if (matchedDate !== undefined) {
+                return matchedDate;
             }
         }
         throw new Error('Date cannot represent an invalid date string');

@@ -10,15 +10,21 @@ import type {
 } from '@/domain/types/trainingSession';
 import { mapTrainingSessionToDomain } from '@/infrastructure/sequelize/mappers';
 import { TrainingSession as TrainingSessionModel } from '@/models/trainingSession';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 
 export class TrainingSessionRepository implements ITrainingSessionRepository {
-  async create(input: TrainingSessionCreateInput): Promise<TrainingSession> {
-    const created = await TrainingSessionModel.create({
-      date: input.date,
-      bodyWeight: input.bodyWeight,
-      notes: input.notes,
-    });
+  async create(
+    input: TrainingSessionCreateInput,
+    transaction?: Transaction
+  ): Promise<TrainingSession> {
+    const created = await TrainingSessionModel.create(
+      {
+        date: input.date,
+        bodyWeight: input.bodyWeight,
+        notes: input.notes,
+      },
+      { transaction }
+    );
     return mapTrainingSessionToDomain(created);
   }
 
@@ -39,7 +45,8 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
     const sessions = await TrainingSessionModel.findAll({
       where: {
         date: {
-          [Op.between]: [startDate.toISOString().slice(0, 10), endDate.toISOString().slice(0, 10)],
+          [Op.gte]: startDate.toISOString().slice(0, 10),
+          [Op.lt]: endDate.toISOString().slice(0, 10),
         },
       },
       order: [['date', 'DESC']],
@@ -60,12 +67,18 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
     };
   }
 
-  async update(id: number, input: TrainingSessionUpdateInput): Promise<TrainingSession | null> {
-    const session = await TrainingSessionModel.findByPk(id);
-    if (!session) return null;
+  async update(
+    id: number,
+    input: TrainingSessionUpdateInput,
+    transaction?: Transaction
+  ): Promise<TrainingSession | null> {
+    const session = await TrainingSessionModel.findByPk(id, { transaction });
+    if (!session) {
+      return null;
+    }
 
     await session.update({
-      date: input.date !== undefined ? input.date : session.date,
+      date: input.date ?? session.date,
       bodyWeight: input.bodyWeight !== undefined ? input.bodyWeight : session.bodyWeight,
       notes: input.notes !== undefined ? input.notes : session.notes,
     });
@@ -83,12 +96,30 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
   }
 
   async getStreakSummary(): Promise<TrainingSessionStreakSummary> {
+    const totalCount = await TrainingSessionModel.count();
+
+    const latest = await TrainingSessionModel.findOne({
+      order: [['date', 'DESC']],
+    });
+
+    const now = new Date();
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const nextMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+
+    const thisMonthCount = await TrainingSessionModel.count({
+      where: {
+        date: {
+          [Op.gte]: monthStart.toISOString().slice(0, 10),
+          [Op.lt]: nextMonthStart.toISOString().slice(0, 10),
+        },
+      },
+    });
     return {
       currentStreak: 0,
       longestStreak: 0,
-      lastTrainingDate: null,
-      thisMonthCount: 0,
-      totalCount: 0,
+      lastTrainingDate: latest ? latest.date : null,
+      thisMonthCount,
+      totalCount,
     };
   }
 }

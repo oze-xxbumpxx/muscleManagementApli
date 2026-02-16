@@ -557,6 +557,40 @@ backend/src/models/
 
 ---
 
+## 2026-02-11
+
+### ESLint修正とログ方針の決定
+
+#### やったこと
+1. **ESLint設定エラーの解消**
+   - `.eslintrc.json` の不正なコメント風プロパティ（`"// ...": ""`）を削除
+   - `parserOptions.project` を `backend/tsconfig.json` と `frontend/tsconfig.json` のみに調整
+
+2. **lintエラー/警告の修正**
+   - `curly` ルール違反の `if` 文をブロック形式に統一
+   - 一部の三項演算子を `??` に置換（`prefer-nullish-coalescing` 対応）
+   - `strict-boolean-expressions` の警告を明示判定に変更
+   - `npm run lint` を warning 含めて 0 件に到達
+
+3. **ログ方針の決定**
+   - MVP1: `console.warn` / `console.error` を継続利用
+   - MVP2以降: `pino` へ段階的に移行する方針を採用
+
+#### 学んだこと
+- **JSON設定ファイルにコメントは書けない**
+  - コメント風キーを入れると ESLint 設定自体が壊れる
+- **monorepo では ESLint の project 指定が重要**
+  - 不適切な tsconfig が混ざると型解決が崩れ、`no-unsafe-*` 系エラーが大量発生する
+- **MVP段階での現実的な判断**
+  - まずは lint を健全化し、ロガー本格導入は MVP2 に回すのが効率的
+
+#### 次のステップ
+1. Repository / UseCase / Resolver の実装を優先
+2. MVP2で `logger.ts` を追加し、`pino` へ移行
+3. ログレベル方針（dev/prod）と共通メタデータ（service, env, requestId）を定義
+
+---
+
 ## 学習メモテンプレート
 
 ### YYYY-MM-DD

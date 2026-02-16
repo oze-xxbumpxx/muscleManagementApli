@@ -1,3 +1,4 @@
+import { Transaction } from 'sequelize';
 import type {
   TrainingSession,
   TrainingSessionCreateInput,
@@ -10,7 +11,7 @@ import type {
 
 export interface ITrainingSessionRepository {
   // Create
-  create(input: TrainingSessionCreateInput): Promise<TrainingSession>;
+  create(input: TrainingSessionCreateInput, transaction?: Transaction): Promise<TrainingSession>;
 
   // Read
   findById(id: number): Promise<TrainingSession | null>;
@@ -19,7 +20,11 @@ export interface ITrainingSessionRepository {
   findAll(query: TrainingSessionListQuery): Promise<TrainingSessionListResult>;
 
   // Update
-  update(id: number, input: TrainingSessionUpdateInput): Promise<TrainingSession | null>;
+  update(
+    id: number,
+    input: TrainingSessionUpdateInput,
+    transaction?: Transaction
+  ): Promise<TrainingSession | null>;
 
   // Delete
   deleteById(id: number): Promise<TrainingSessionDeleteResult>;

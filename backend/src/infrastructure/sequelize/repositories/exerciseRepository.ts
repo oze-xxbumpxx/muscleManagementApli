@@ -9,24 +9,30 @@ import {
 } from '@/domain/types/exercise';
 import { Exercise as ExerciseModel } from '@/models/exercise';
 import { mapExerciseToDomain } from '../mappers';
+import { Transaction } from 'sequelize';
 
 export class ExerciseRepository implements IExerciseRepository {
-  async create(input: ExerciseCreateInput): Promise<Exercise> {
-    const created = await ExerciseModel.create({
-      trainingSessionId: input.trainingSessionId,
-      exerciseName: input.exerciseName,
-      weight: input.weight,
-      reps: input.reps,
-      durationSeconds: input.durationSeconds,
-      sets: input.sets,
-      order: input.order,
-      notes: input.notes,
-    });
+  async create(input: ExerciseCreateInput, transaction?: Transaction): Promise<Exercise> {
+    const created = await ExerciseModel.create(
+      {
+        trainingSessionId: input.trainingSessionId,
+        exerciseName: input.exerciseName,
+        weight: input.weight,
+        reps: input.reps,
+        durationSeconds: input.durationSeconds,
+        sets: input.sets,
+        order: input.order,
+        notes: input.notes,
+      },
+      { transaction }
+    );
     return mapExerciseToDomain(created);
   }
 
-  async createMany(inputs: ExerciseCreateInput[]): Promise<Exercise[]> {
-    if (inputs.length === 0) return [];
+  async createMany(inputs: ExerciseCreateInput[], transaction?: Transaction): Promise<Exercise[]> {
+    if (inputs.length === 0) {
+      return [];
+    }
 
     const created = await ExerciseModel.bulkCreate(
       inputs.map((input) => ({
@@ -42,6 +48,7 @@ export class ExerciseRepository implements IExerciseRepository {
       {
         validate: true,
         returning: true,
+        transaction,
       }
     );
     return created.map(mapExerciseToDomain);
@@ -77,16 +84,18 @@ export class ExerciseRepository implements IExerciseRepository {
 
   async update(id: number, input: ExerciseUpdateInput): Promise<Exercise | null> {
     const exercise = await ExerciseModel.findByPk(id);
-    if (!exercise) return null;
+    if (!exercise) {
+      return null;
+    }
 
     await exercise.update({
-      exerciseName: input.exerciseName !== undefined ? input.exerciseName : exercise.exerciseName,
+      exerciseName: input.exerciseName ?? exercise.exerciseName,
       weight: input.weight !== undefined ? input.weight : exercise.weight,
       reps: input.reps !== undefined ? input.reps : exercise.reps,
       durationSeconds:
         input.durationSeconds !== undefined ? input.durationSeconds : exercise.durationSeconds,
-      sets: input.sets !== undefined ? input.sets : exercise.sets,
-      order: input.order !== undefined ? input.order : exercise.order,
+      sets: input.sets ?? exercise.sets,
+      order: input.order ?? exercise.order,
       notes: input.notes !== undefined ? input.notes : exercise.notes,
     });
     return mapExerciseToDomain(exercise);
