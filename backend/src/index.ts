@@ -8,7 +8,8 @@ import { createTrainingResolver } from './resolvers/trainingResolver';
 import { scalarResolvers } from './graphql/scalars';
 import { testConnection } from './config/database';
 import { CreateTrainingSessionUseCase } from '@/usecases/createTrainingSessionUsecase';
-import { UpdateTrainingSessionUseCase } from './usecases/updateTrainingSessionUsecase';
+import { UpdateTrainingSessionUseCase } from '@/usecases/updateTrainingSessionUsecase';
+import { DeleteTrainingSessionUseCase } from '@/usecases/deleteTrainingSessionUsecase';
 
 /**
  * GraphQLスキーマを読み込む
@@ -28,9 +29,11 @@ const createTrainingSessionUseCase = new CreateTrainingSessionUseCase(
   exerciseRepository
 );
 const updateTrainingSessionUseCase = new UpdateTrainingSessionUseCase(trainingSessionRepository);
+const deleteTrainingSessionUseCase = new DeleteTrainingSessionUseCase(trainingSessionRepository);
 const trainingResolver = createTrainingResolver({
   CreateTrainingSessionUseCase: createTrainingSessionUseCase,
   UpdateTrainingSessionUseCase: updateTrainingSessionUseCase,
+  DeleteTrainingSessionUseCase: deleteTrainingSessionUseCase,
 });
 
 const resolvers = {
@@ -58,12 +61,6 @@ const resolvers = {
   Mutation: {
     // TODO: 実装予定
     ...trainingResolver.Mutation,
-    updateTrainingSession: () => {
-      throw new Error('Not implemented');
-    },
-    deleteTrainingSession: () => {
-      throw new Error('Not implemented');
-    },
     addExercise: () => {
       throw new Error('Not implemented');
     },

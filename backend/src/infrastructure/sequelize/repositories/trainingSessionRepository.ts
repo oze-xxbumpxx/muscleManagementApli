@@ -85,9 +85,10 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
     return mapTrainingSessionToDomain(session);
   }
 
-  async deleteById(id: number): Promise<TrainingSessionDeleteResult> {
+  async deleteById(id: number, transaction?: Transaction): Promise<TrainingSessionDeleteResult> {
     const deletedCount = await TrainingSessionModel.destroy({
       where: { id },
+      transaction,
     });
     return {
       success: deletedCount > 0,

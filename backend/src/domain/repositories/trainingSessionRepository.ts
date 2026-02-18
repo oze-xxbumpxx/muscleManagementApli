@@ -27,7 +27,7 @@ export interface ITrainingSessionRepository {
   ): Promise<TrainingSession | null>;
 
   // Delete
-  deleteById(id: number): Promise<TrainingSessionDeleteResult>;
+  deleteById(id: number, transaction?: Transaction): Promise<TrainingSessionDeleteResult>;
 
   // Aggregations
   getStreakSummary(): Promise<TrainingSessionStreakSummary>;
