@@ -89,6 +89,14 @@ type TrainingDay {
 }
 
 """
+トレーニングセッション一覧の取得結果
+"""
+type TrainingSessionListResult {
+  totalCount: Int!
+  items: [TrainingSession!]!
+}
+
+"""
 削除操作の結果
 """
 type DeleteResult {
@@ -153,7 +161,7 @@ type Query {
   """
   トレーニングセッション一覧取得（日付降順）
   """
-  trainingSessions(limit: Int = 20, offset: Int = 0): [TrainingSession!]!
+  trainingSessions(limit: Int = 20, offset: Int = 0): TrainingSessionListResult!
 
   """
   特定のトレーニングセッション取得
@@ -219,7 +227,7 @@ type Mutation {
   """
   エクササイズ追加（既存セッションに）
   """
-  addExercise(trainingSessionId: ID!, input: CreateExerciseInput!): Exercise!
+  addExercise(trainingSessionId: Int!, input: CreateExerciseInput!): Exercise!
 
   """
   エクササイズ更新

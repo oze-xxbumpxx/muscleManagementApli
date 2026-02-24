@@ -10,6 +10,11 @@ import { testConnection } from './config/database';
 import { CreateTrainingSessionUseCase } from '@/usecases/createTrainingSessionUsecase';
 import { UpdateTrainingSessionUseCase } from '@/usecases/updateTrainingSessionUsecase';
 import { DeleteTrainingSessionUseCase } from '@/usecases/deleteTrainingSessionUsecase';
+import { GetTrainingSessionByDateUseCase } from '@/usecases/getTrainingSessionByDateUsecase';
+import { GetTrainingSessionsUseCase } from '@/usecases/getTrainingSessionsUseCase';
+import { GetTrainingSessionByIdUseCase } from '@/usecases/getTrainingSessionByIdUseCase';
+import { AddExerciseUseCase } from '@/usecases/addExerciseUseCase';
+import { createExerciseResolver } from './resolvers/exerciseResolver';
 
 /**
  * GraphQLスキーマを読み込む
@@ -19,9 +24,6 @@ function loadTypeDefs(): string {
   return readFileSync(schemaPath, 'utf-8');
 }
 
-/**
- * 仮のリゾルバー（後で実装）
- */
 const trainingSessionRepository = new TrainingSessionRepository();
 const exerciseRepository = new ExerciseRepository();
 const createTrainingSessionUseCase = new CreateTrainingSessionUseCase(
@@ -30,10 +32,23 @@ const createTrainingSessionUseCase = new CreateTrainingSessionUseCase(
 );
 const updateTrainingSessionUseCase = new UpdateTrainingSessionUseCase(trainingSessionRepository);
 const deleteTrainingSessionUseCase = new DeleteTrainingSessionUseCase(trainingSessionRepository);
+const getTrainingSessionByDateUsecase = new GetTrainingSessionByDateUseCase(
+  trainingSessionRepository
+);
+const getTrainingSessionByIdUsecase = new GetTrainingSessionByIdUseCase(trainingSessionRepository);
+const getTrainingSessionsUseCase = new GetTrainingSessionsUseCase(trainingSessionRepository);
+const addExerciseUseCase = new AddExerciseUseCase(exerciseRepository, trainingSessionRepository);
 const trainingResolver = createTrainingResolver({
   CreateTrainingSessionUseCase: createTrainingSessionUseCase,
   UpdateTrainingSessionUseCase: updateTrainingSessionUseCase,
   DeleteTrainingSessionUseCase: deleteTrainingSessionUseCase,
+  GetTrainingSessionByDateUseCase: getTrainingSessionByDateUsecase,
+  GetTrainingSessionsUseCase: getTrainingSessionsUseCase,
+  GetTrainingSessionByIdUseCase: getTrainingSessionByIdUsecase,
+});
+
+const exerciseResolver = createExerciseResolver({
+  AddExerciseUseCase: addExerciseUseCase,
 });
 
 const resolvers = {
@@ -42,9 +57,8 @@ const resolvers = {
 
   Query: {
     // TODO: 実装予定
-    trainingSessions: (): [] => [],
-    trainingSession: (): null => null,
-    trainingSessionByDate: (): null => null,
+    ...trainingResolver.Query,
+    ...exerciseResolver.Query,
     exerciseHistory: (): [] => [],
     recentExerciseFrequency: (): [] => [],
     exerciseConsecutiveCount: (): number => 0,
@@ -61,9 +75,7 @@ const resolvers = {
   Mutation: {
     // TODO: 実装予定
     ...trainingResolver.Mutation,
-    addExercise: () => {
-      throw new Error('Not implemented');
-    },
+    ...exerciseResolver.Mutation,
     updateExercise: () => {
       throw new Error('Not implemented');
     },
