@@ -9,7 +9,7 @@ import {
 } from '@/domain/types/exercise';
 import { Exercise as ExerciseModel } from '@/models/exercise';
 import { mapExerciseToDomain } from '../mappers';
-import { Transaction } from 'sequelize';
+import { col, fn, Transaction } from 'sequelize';
 
 export class ExerciseRepository implements IExerciseRepository {
   async create(input: ExerciseCreateInput, transaction?: Transaction): Promise<Exercise> {
@@ -82,30 +82,51 @@ export class ExerciseRepository implements IExerciseRepository {
     };
   }
 
-  async update(id: number, input: ExerciseUpdateInput): Promise<Exercise | null> {
+  async findExerciseNames(): Promise<string[]> {
+    const exercises = await ExerciseModel.findAll({
+      attributes: [[fn('DISTINCT', col('exercise_name')), 'exerciseName']],
+      order: [['exerciseName', 'ASC']],
+      raw: true,
+    });
+
+    const normalizedNames = exercises
+      .map((exercise) => exercise.exerciseName.trim())
+      .filter((name) => name.length > 0);
+    return [...new Set(normalizedNames)].sort((a, b) => a.localeCompare(b, 'ja'));
+  }
+
+  async update(
+    id: number,
+    input: ExerciseUpdateInput,
+    transaction?: Transaction
+  ): Promise<Exercise | null> {
     const exercise = await ExerciseModel.findByPk(id);
     if (!exercise) {
       return null;
     }
 
-    await exercise.update({
-      exerciseName: input.exerciseName ?? exercise.exerciseName,
-      weight: input.weight !== undefined ? input.weight : exercise.weight,
-      reps: input.reps !== undefined ? input.reps : exercise.reps,
-      durationSeconds:
-        input.durationSeconds !== undefined ? input.durationSeconds : exercise.durationSeconds,
-      sets: input.sets ?? exercise.sets,
-      order: input.order ?? exercise.order,
-      notes: input.notes !== undefined ? input.notes : exercise.notes,
-    });
+    await exercise.update(
+      {
+        exerciseName: input.exerciseName ?? exercise.exerciseName,
+        weight: input.weight !== undefined ? input.weight : exercise.weight,
+        reps: input.reps !== undefined ? input.reps : exercise.reps,
+        durationSeconds:
+          input.durationSeconds !== undefined ? input.durationSeconds : exercise.durationSeconds,
+        sets: input.sets ?? exercise.sets,
+        order: input.order ?? exercise.order,
+        notes: input.notes !== undefined ? input.notes : exercise.notes,
+      },
+      { transaction }
+    );
     return mapExerciseToDomain(exercise);
   }
 
-  async deleteById(id: number): Promise<ExerciseDeleteResult> {
+  async deleteById(id: number, transaction?: Transaction): Promise<ExerciseDeleteResult> {
     const deletedCount = await ExerciseModel.destroy({
       where: {
         id,
       },
+      transaction,
     });
     return {
       success: deletedCount > 0,

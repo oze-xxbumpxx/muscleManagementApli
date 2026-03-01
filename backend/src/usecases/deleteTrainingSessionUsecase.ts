@@ -5,7 +5,7 @@ import z from 'zod';
 
 // zodスキーマ
 const deleteTrainingSessionSchema = z.object({
-  id: z.number().positive(),
+  id: z.number().int().positive(),
 });
 
 type DeleteTrainingSessionUseCaseInput = z.infer<typeof deleteTrainingSessionSchema>;
@@ -16,11 +16,7 @@ export class DeleteTrainingSessionUseCase {
   async execute(input: DeleteTrainingSessionUseCaseInput): Promise<TrainingSessionDeleteResult> {
     const validated = deleteTrainingSessionSchema.parse(input);
     const deletedSession = await sequelize.transaction(async (transaction) => {
-      const session = await this.trainingSessionRepository.deleteById(validated.id, transaction);
-      if (!session.success) {
-        throw new Error('Failed to delete training session');
-      }
-      return session;
+      return this.trainingSessionRepository.deleteById(validated.id, transaction);
     });
 
     return deletedSession;

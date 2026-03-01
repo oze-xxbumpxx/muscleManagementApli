@@ -17,10 +17,15 @@ export interface IExerciseRepository {
   findById(id: number): Promise<Exercise | null>;
   findByTrainingSessionId(trainingSessionId: number): Promise<Exercise[]>;
   findAll(query: ExerciseListQuery): Promise<ExerciseListResult>;
+  findExerciseNames(): Promise<string[]>;
 
   // Update
-  update(id: number, input: ExerciseUpdateInput): Promise<Exercise | null>;
+  update(
+    id: number,
+    input: ExerciseUpdateInput,
+    transaction?: Transaction
+  ): Promise<Exercise | null>;
 
   // Delete
-  deleteById(id: number): Promise<ExerciseDeleteResult>;
+  deleteById(id: number, transaction?: Transaction): Promise<ExerciseDeleteResult>;
 }

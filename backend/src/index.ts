@@ -14,7 +14,10 @@ import { GetTrainingSessionByDateUseCase } from '@/usecases/getTrainingSessionBy
 import { GetTrainingSessionsUseCase } from '@/usecases/getTrainingSessionsUseCase';
 import { GetTrainingSessionByIdUseCase } from '@/usecases/getTrainingSessionByIdUseCase';
 import { AddExerciseUseCase } from '@/usecases/addExerciseUseCase';
-import { createExerciseResolver } from './resolvers/exerciseResolver';
+import { createExerciseResolver } from '@/resolvers/exerciseResolver';
+import { UpdateExerciseUseCase } from '@/usecases/updateExerciseUseCase';
+import { DeleteExerciseUseCase } from '@/usecases/deleteExerciseUseCase';
+import { GetExerciseNamesUseCase } from '@/usecases/getExerciseNamesUseCase';
 
 /**
  * GraphQLスキーマを読み込む
@@ -38,6 +41,9 @@ const getTrainingSessionByDateUsecase = new GetTrainingSessionByDateUseCase(
 const getTrainingSessionByIdUsecase = new GetTrainingSessionByIdUseCase(trainingSessionRepository);
 const getTrainingSessionsUseCase = new GetTrainingSessionsUseCase(trainingSessionRepository);
 const addExerciseUseCase = new AddExerciseUseCase(exerciseRepository, trainingSessionRepository);
+const updateExerciseUseCase = new UpdateExerciseUseCase(exerciseRepository);
+const deleteExerciseUseCase = new DeleteExerciseUseCase(exerciseRepository);
+const getExerciseNameUseCase = new GetExerciseNamesUseCase(exerciseRepository);
 const trainingResolver = createTrainingResolver({
   CreateTrainingSessionUseCase: createTrainingSessionUseCase,
   UpdateTrainingSessionUseCase: updateTrainingSessionUseCase,
@@ -49,6 +55,9 @@ const trainingResolver = createTrainingResolver({
 
 const exerciseResolver = createExerciseResolver({
   AddExerciseUseCase: addExerciseUseCase,
+  UpdateExerciseUseCase: updateExerciseUseCase,
+  DeleteExerciseUseCase: deleteExerciseUseCase,
+  GetExerciseNameUseCase: getExerciseNameUseCase,
 });
 
 const resolvers = {
@@ -69,19 +78,12 @@ const resolvers = {
       totalCount: 0,
     }),
     trainingDaysInMonth: (): [] => [],
-    exerciseNames: (): [] => [],
   },
 
   Mutation: {
     // TODO: 実装予定
     ...trainingResolver.Mutation,
     ...exerciseResolver.Mutation,
-    updateExercise: () => {
-      throw new Error('Not implemented');
-    },
-    deleteExercise: () => {
-      throw new Error('Not implemented');
-    },
     reorderExercises: (): [] => [],
   },
 };

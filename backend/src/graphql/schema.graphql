@@ -166,7 +166,7 @@ type Query {
   """
   特定のトレーニングセッション取得
   """
-  trainingSession(id: ID!): TrainingSession
+  trainingSession(id: Int!): TrainingSession
 
   """
   日付でトレーニングセッション取得
@@ -217,12 +217,12 @@ type Mutation {
   """
   トレーニングセッション更新（基本情報のみ）
   """
-  updateTrainingSession(id: ID!, input: UpdateTrainingSessionInput!): TrainingSession!
+  updateTrainingSession(id: Int!, input: UpdateTrainingSessionInput!): TrainingSession!
 
   """
   トレーニングセッション削除（関連エクササイズも削除）
   """
-  deleteTrainingSession(id: ID!): DeleteResult!
+  deleteTrainingSession(id: Int!): DeleteResult!
 
   """
   エクササイズ追加（既存セッションに）
@@ -232,15 +232,15 @@ type Mutation {
   """
   エクササイズ更新
   """
-  updateExercise(id: ID!, input: UpdateExerciseInput!): Exercise!
+  updateExercise(id: Int!, input: UpdateExerciseInput!): Exercise!
 
   """
   エクササイズ削除
   """
-  deleteExercise(id: ID!): DeleteResult!
+  deleteExercise(id: Int!): DeleteResult!
 
   """
   エクササイズの並び順を更新
   """
-  reorderExercises(trainingSessionId: ID!, exerciseIds: [ID!]!): [Exercise!]!
+  reorderExercises(trainingSessionId: Int!, exerciseIds: [Int!]!): [Exercise!]!
 }
