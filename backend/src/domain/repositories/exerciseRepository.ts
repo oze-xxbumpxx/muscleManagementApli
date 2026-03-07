@@ -3,6 +3,8 @@ import type {
   Exercise,
   ExerciseCreateInput,
   ExerciseDeleteResult,
+  ExerciseHistoryItem,
+  ExerciseHistoryQuery,
   ExerciseListQuery,
   ExerciseListResult,
   ExerciseUpdateInput,
@@ -18,7 +20,7 @@ export interface IExerciseRepository {
   findByTrainingSessionId(trainingSessionId: number): Promise<Exercise[]>;
   findAll(query: ExerciseListQuery): Promise<ExerciseListResult>;
   findExerciseNames(): Promise<string[]>;
-
+  findExerciseHistory(query: ExerciseHistoryQuery): Promise<ExerciseHistoryItem[]>;
   // Update
   update(
     id: number,

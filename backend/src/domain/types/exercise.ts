@@ -41,21 +41,23 @@ export interface ExerciseReorderInput {
 export interface ExerciseHistoryQuery {
   exerciseName: string;
   limit: number;
-  offset: number;
 }
 
 export interface ExerciseHistoryItem {
   date: string;
+  exerciseName: string;
   weight: number | null;
   reps: number | null;
   durationSeconds: number | null;
   sets: number;
+  bodyWeight: number | null;
 }
 
-export interface ExerciseHistoryResult {
-  totalCount: number;
-  items: ExerciseHistoryItem[];
-}
+// TODO MVP2で追加予定
+// export interface ExerciseHistoryResult {
+//   totalCount: number;
+//   items: ExerciseHistoryItem[];
+// }
 
 export interface ExerciseListQuery {
   limit: number;

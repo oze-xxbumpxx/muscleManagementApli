@@ -1,16 +1,39 @@
 import type { IExerciseRepository } from '@/domain/repositories/exerciseRepository';
+import { TrainingSession as TrainingSessionModel } from '@/models/trainingSession';
 import {
   Exercise,
   ExerciseCreateInput,
   ExerciseDeleteResult,
+  ExerciseHistoryItem,
+  ExerciseHistoryQuery,
   ExerciseListQuery,
   ExerciseListResult,
   ExerciseUpdateInput,
 } from '@/domain/types/exercise';
 import { Exercise as ExerciseModel } from '@/models/exercise';
-import { mapExerciseToDomain } from '../mappers';
+import { mapExerciseToDomain, toNumberOrNull } from '../mappers';
 import { col, fn, Transaction } from 'sequelize';
 
+interface TrainingSessionHistoryShape {
+  date: string;
+  bodyWeight: number | null;
+}
+
+function isTrainingSessionHistoryShape(value: unknown): value is TrainingSessionHistoryShape {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  if (!('date' in value) || typeof value.date !== 'string') {
+    return false;
+  }
+
+  if (!('bodyWeight' in value)) {
+    return false;
+  }
+
+  return typeof value.bodyWeight === 'number' || value.bodyWeight === null;
+}
 export class ExerciseRepository implements IExerciseRepository {
   async create(input: ExerciseCreateInput, transaction?: Transaction): Promise<Exercise> {
     const created = await ExerciseModel.create(
@@ -93,6 +116,42 @@ export class ExerciseRepository implements IExerciseRepository {
       .map((exercise) => exercise.exerciseName.trim())
       .filter((name) => name.length > 0);
     return [...new Set(normalizedNames)].sort((a, b) => a.localeCompare(b, 'ja'));
+  }
+
+  async findExerciseHistory(query: ExerciseHistoryQuery): Promise<ExerciseHistoryItem[]> {
+    const { exerciseName, limit } = query;
+
+    const rows = await ExerciseModel.findAll({
+      where: { exerciseName },
+      include: [
+        {
+          model: TrainingSessionModel,
+          as: 'trainingSession',
+          attributes: ['date', 'bodyWeight'],
+          required: true,
+        },
+      ],
+      order: [[{ model: TrainingSessionModel, as: 'trainingSession' }, 'date', 'DESC']],
+      limit,
+    });
+
+    return rows.map((row) => {
+      const trainingSession = row.get('trainingSession');
+
+      if (!isTrainingSessionHistoryShape(trainingSession)) {
+        throw new Error('Invalid trainingSession shape for exercise history');
+      }
+
+      return {
+        date: trainingSession.date,
+        exerciseName: row.exerciseName,
+        weight: toNumberOrNull(row.weight),
+        reps: row.reps,
+        durationSeconds: row.durationSeconds,
+        sets: row.sets,
+        bodyWeight: toNumberOrNull(trainingSession.bodyWeight),
+      };
+    });
   }
 
   async update(
