@@ -3,6 +3,7 @@ import { UpdateExerciseUseCase } from '@/usecases/updateExerciseUseCase';
 import { DeleteExerciseUseCase } from '@/usecases/deleteExerciseUseCase';
 import { GetExerciseNamesUseCase } from '@/usecases/getExerciseNamesUseCase';
 import { GetExerciseHistoryUsecase } from '@/usecases/getExerciseHistoryUsecase';
+import { GetTrainingDaysInMounthUseCase } from '@/usecases/getTrainingDaysInMounthUsecase';
 
 type AddExerciseInput = Omit<Parameters<AddExerciseUseCase['execute']>[0], 'trainingSessionId'>;
 type UpdateExerciseInput = Omit<Parameters<UpdateExerciseUseCase['execute']>[0], 'id'>;
@@ -24,12 +25,18 @@ interface GetExerciseHistoryArgs {
   limit: number;
 }
 
+interface GetTrainingDaysInMonthArgs {
+  year: number;
+  month: number;
+}
+
 interface ExerciseResolverDeps {
   AddExerciseUseCase: AddExerciseUseCase;
   UpdateExerciseUseCase: UpdateExerciseUseCase;
   DeleteExerciseUseCase: DeleteExerciseUseCase;
   GetExerciseNameUseCase: GetExerciseNamesUseCase;
   GetExerciseHistoryUseCase: GetExerciseHistoryUsecase;
+  GetTrainingDaysInMonthUseCase: GetTrainingDaysInMounthUseCase;
 }
 
 export function createExerciseResolver(deps: ExerciseResolverDeps) {
@@ -42,6 +49,12 @@ export function createExerciseResolver(deps: ExerciseResolverDeps) {
         return deps.GetExerciseHistoryUseCase.execute({
           exerciseName: args.exerciseName,
           limit: args.limit,
+        });
+      },
+      trainingDaysInMonth: async (_parent: unknown, args: GetTrainingDaysInMonthArgs) => {
+        return deps.GetTrainingDaysInMonthUseCase.execute({
+          year: args.year,
+          month: args.month,
         });
       },
     },

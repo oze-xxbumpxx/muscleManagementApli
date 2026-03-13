@@ -1,5 +1,6 @@
 import { Transaction } from 'sequelize';
 import type {
+  TrainingDay,
   TrainingSession,
   TrainingSessionCreateInput,
   TrainingSessionDeleteResult,
@@ -17,6 +18,7 @@ export interface ITrainingSessionRepository {
   findById(id: number): Promise<TrainingSession | null>;
   findByDate(date: string): Promise<TrainingSession | null>;
   findByMonth(year: number, month: number): Promise<TrainingSession[]>;
+  findTrainingDaysInMonth(year: number, month: number): Promise<TrainingDay[]>;
   findAll(query: TrainingSessionListQuery): Promise<TrainingSessionListResult>;
 
   // Update

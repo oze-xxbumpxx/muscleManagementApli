@@ -37,6 +37,11 @@ export interface TrainingSessionStreakSummary {
   totalCount: number;
 }
 
+export interface TrainingDay {
+  date: string;
+  exerciseCount: number;
+}
+
 export interface TrainingSessionDeleteResult {
   success: boolean;
   deletedId: number | null;

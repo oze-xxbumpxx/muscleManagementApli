@@ -1,5 +1,6 @@
 import type { ITrainingSessionRepository } from '@/domain/repositories/trainingSessionRepository';
 import type {
+  TrainingDay,
   TrainingSession,
   TrainingSessionCreateInput,
   TrainingSessionDeleteResult,
@@ -11,6 +12,33 @@ import type {
 import { mapTrainingSessionToDomain } from '@/infrastructure/sequelize/mappers';
 import { TrainingSession as TrainingSessionModel } from '@/models/trainingSession';
 import { Op, Transaction } from 'sequelize';
+
+interface TrainingDayAggregateRow {
+  date: string;
+  exerciseCount: string | number;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object';
+}
+function isTrainingDayAggregateRow(value: unknown): value is TrainingDayAggregateRow {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    typeof value['date'] === 'string' &&
+    (typeof value['exerciseCount'] === 'string' || typeof value['exerciseCount'] === 'number')
+  );
+}
+
+function mapAggregateRowToTrainingDay(row: TrainingDayAggregateRow): TrainingDay {
+  const exerciseCount =
+    typeof row.exerciseCount === 'number' ? row.exerciseCount : Number(row.exerciseCount);
+  return {
+    date: row.date,
+    exerciseCount: Number.isNaN(exerciseCount) ? 0 : exerciseCount,
+  };
+}
 
 export class TrainingSessionRepository implements ITrainingSessionRepository {
   async create(

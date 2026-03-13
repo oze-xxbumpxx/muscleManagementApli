@@ -111,6 +111,7 @@ npm run lint          # ESLint
 | review | opus | コードレビューは包括的な分析・品質判断が必要 |
 | backend | sonnet | 実装タスクは品質と速度のバランスが重要 |
 | frontend | sonnet | UI実装も品質と速度のバランス重視 |
+| ui-design | sonnet | UI/UXデザイン・コンポーネント設計・アクセシビリティ支援 |
 | test | sonnet | テスト実装は十分な品質を保ちつつ効率的に |
 | infra | sonnet | インフラ設定は正確性が必要だがsonnetで十分 |
 | Explore | haiku | コード検索は速度優先 |

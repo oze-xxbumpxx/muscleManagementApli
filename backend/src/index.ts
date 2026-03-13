@@ -19,6 +19,7 @@ import { UpdateExerciseUseCase } from '@/usecases/updateExerciseUseCase';
 import { DeleteExerciseUseCase } from '@/usecases/deleteExerciseUseCase';
 import { GetExerciseNamesUseCase } from '@/usecases/getExerciseNamesUseCase';
 import { GetExerciseHistoryUsecase } from '@/usecases/getExerciseHistoryUsecase';
+import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMounthUsecase';
 
 /**
  * GraphQLスキーマを読み込む
@@ -41,6 +42,7 @@ const getTrainingSessionByDateUsecase = new GetTrainingSessionByDateUseCase(
 );
 const getTrainingSessionByIdUsecase = new GetTrainingSessionByIdUseCase(trainingSessionRepository);
 const getTrainingSessionsUseCase = new GetTrainingSessionsUseCase(trainingSessionRepository);
+const getTrainingDaysInMounthUseCase = new GetTrainingDaysInMonthUseCase(trainingSessionRepository);
 const addExerciseUseCase = new AddExerciseUseCase(exerciseRepository, trainingSessionRepository);
 const updateExerciseUseCase = new UpdateExerciseUseCase(exerciseRepository);
 const deleteExerciseUseCase = new DeleteExerciseUseCase(exerciseRepository);
@@ -53,6 +55,7 @@ const trainingResolver = createTrainingResolver({
   GetTrainingSessionByDateUseCase: getTrainingSessionByDateUsecase,
   GetTrainingSessionsUseCase: getTrainingSessionsUseCase,
   GetTrainingSessionByIdUseCase: getTrainingSessionByIdUsecase,
+  GetTrainingDaysInMonthUseCase: getTrainingDaysInMounthUseCase,
 });
 
 const exerciseResolver = createExerciseResolver({
@@ -79,7 +82,6 @@ const resolvers = {
       thisMonthCount: 0,
       totalCount: 0,
     }),
-    trainingDaysInMonth: (): [] => [],
   },
 
   Mutation: {

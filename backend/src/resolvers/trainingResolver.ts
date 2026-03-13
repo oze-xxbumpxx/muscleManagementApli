@@ -4,6 +4,7 @@ import { DeleteTrainingSessionUseCase } from '@/usecases/deleteTrainingSessionUs
 import { GetTrainingSessionByDateUseCase } from '@/usecases/getTrainingSessionByDateUsecase';
 import { GetTrainingSessionsUseCase } from '@/usecases/getTrainingSessionsUseCase';
 import { GetTrainingSessionByIdUseCase } from '@/usecases/getTrainingSessionByIdUseCase';
+import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMounthUsecase';
 
 type CreateTrainingSessionInput = Parameters<CreateTrainingSessionUseCase['execute']>[0];
 type UpdateTrainingSessionInput = Omit<
@@ -36,6 +37,12 @@ interface GetTrainingSessionsArgs {
 interface GetTrainingSessionByIdArgs {
   id: number;
 }
+
+interface GetTrainingDaysInMonthArgs {
+  year: number;
+  month: number;
+}
+
 interface TrainingResolverDeps {
   CreateTrainingSessionUseCase: CreateTrainingSessionUseCase;
   UpdateTrainingSessionUseCase: UpdateTrainingSessionUseCase;
@@ -43,6 +50,7 @@ interface TrainingResolverDeps {
   GetTrainingSessionByDateUseCase: GetTrainingSessionByDateUseCase;
   GetTrainingSessionsUseCase: GetTrainingSessionsUseCase;
   GetTrainingSessionByIdUseCase: GetTrainingSessionByIdUseCase;
+  GetTrainingDaysInMonthUseCase: GetTrainingDaysInMonthUseCase;
 }
 
 export function createTrainingResolver(deps: TrainingResolverDeps) {
@@ -56,6 +64,12 @@ export function createTrainingResolver(deps: TrainingResolverDeps) {
       },
       trainingSession: async (_parent: unknown, args: GetTrainingSessionByIdArgs) => {
         return deps.GetTrainingSessionByIdUseCase.execute(args);
+      },
+      trainingDaysInMonth: async (_parent: unknown, args: GetTrainingDaysInMonthArgs) => {
+        return deps.GetTrainingDaysInMonthUseCase.execute({
+          year: args.year,
+          month: args.month,
+        });
       },
     },
     Mutation: {
