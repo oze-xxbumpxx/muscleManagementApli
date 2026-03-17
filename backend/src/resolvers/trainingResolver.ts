@@ -4,7 +4,7 @@ import { DeleteTrainingSessionUseCase } from '@/usecases/deleteTrainingSessionUs
 import { GetTrainingSessionByDateUseCase } from '@/usecases/getTrainingSessionByDateUsecase';
 import { GetTrainingSessionsUseCase } from '@/usecases/getTrainingSessionsUseCase';
 import { GetTrainingSessionByIdUseCase } from '@/usecases/getTrainingSessionByIdUseCase';
-import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMounthUsecase';
+import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMonthUsecase';
 
 type CreateTrainingSessionInput = Parameters<CreateTrainingSessionUseCase['execute']>[0];
 type UpdateTrainingSessionInput = Omit<

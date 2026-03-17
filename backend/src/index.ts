@@ -19,7 +19,7 @@ import { UpdateExerciseUseCase } from '@/usecases/updateExerciseUseCase';
 import { DeleteExerciseUseCase } from '@/usecases/deleteExerciseUseCase';
 import { GetExerciseNamesUseCase } from '@/usecases/getExerciseNamesUseCase';
 import { GetExerciseHistoryUsecase } from '@/usecases/getExerciseHistoryUsecase';
-import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMounthUsecase';
+import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMonthUsecase';
 
 /**
  * GraphQLスキーマを読み込む

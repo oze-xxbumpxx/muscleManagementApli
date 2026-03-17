@@ -12,6 +12,7 @@ import type {
 import { mapTrainingSessionToDomain } from '@/infrastructure/sequelize/mappers';
 import { TrainingSession as TrainingSessionModel } from '@/models/trainingSession';
 import { Op, Transaction } from 'sequelize';
+import { Exercise as ExerciseModel } from '@/models/exercise';
 
 interface TrainingDayAggregateRow {
   date: string;
@@ -80,6 +81,34 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
       order: [['date', 'DESC']],
     });
     return sessions.map(mapTrainingSessionToDomain);
+  }
+
+  async findTrainingDaysInMonth(year: number, month: number): Promise<TrainingDay[]> {
+    const startDate = new Date(Date.UTC(year, month - 1, 1));
+    const endDate = new Date(Date.UTC(year, month, 1));
+    const startStr = startDate.toISOString().slice(0, 10);
+    const endStr = endDate.toISOString().slice(0, 10);
+
+    const sessions = await TrainingSessionModel.findAll({
+      where: {
+        date: { [Op.gte]: startStr, [Op.lt]: endStr },
+      },
+      include: [{ model: ExerciseModel, as: 'exercises', attributes: ['id'] }],
+      order: [['date', 'DESC']],
+    });
+    const mapped = sessions
+      .map((session): unknown => ({
+        date: session.date,
+        exerciseCount: session.exercises?.length ?? 0,
+      }))
+      .filter(isTrainingDayAggregateRow);
+
+    if (mapped.length !== sessions.length) {
+      throw new Error(
+        `TrainingDay conversion failed: expected ${sessions.length}, got ${mapped.length}`
+      );
+    }
+    return mapped.map(mapAggregateRowToTrainingDay);
   }
 
   async findAll(query: TrainingSessionListQuery): Promise<TrainingSessionListResult> {

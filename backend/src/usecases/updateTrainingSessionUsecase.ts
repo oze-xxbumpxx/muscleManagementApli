@@ -7,7 +7,7 @@ import { dateStringSchema } from '@/domain/valueObjects/dateString';
 // zodスキーマ
 const updateTrainingSessionSchema = z
   .object({
-    id: z.number().positive(),
+    id: z.number().int().positive(),
     date: dateStringSchema.optional(),
     bodyWeight: z.number().positive().nullable().optional(),
     notes: z.string().max(2000).nullable().optional(),
