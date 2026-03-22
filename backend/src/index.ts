@@ -20,6 +20,7 @@ import { DeleteExerciseUseCase } from '@/usecases/deleteExerciseUseCase';
 import { GetExerciseNamesUseCase } from '@/usecases/getExerciseNamesUseCase';
 import { GetExerciseHistoryUsecase } from '@/usecases/getExerciseHistoryUsecase';
 import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMonthUsecase';
+import { GetStreakInfoUseCase } from './usecases/getStreakInfoUseCase';
 
 /**
  * GraphQLスキーマを読み込む
@@ -42,12 +43,13 @@ const getTrainingSessionByDateUsecase = new GetTrainingSessionByDateUseCase(
 );
 const getTrainingSessionByIdUsecase = new GetTrainingSessionByIdUseCase(trainingSessionRepository);
 const getTrainingSessionsUseCase = new GetTrainingSessionsUseCase(trainingSessionRepository);
-const getTrainingDaysInMounthUseCase = new GetTrainingDaysInMonthUseCase(trainingSessionRepository);
+const getTrainingDaysInMonthUseCase = new GetTrainingDaysInMonthUseCase(trainingSessionRepository);
 const addExerciseUseCase = new AddExerciseUseCase(exerciseRepository, trainingSessionRepository);
 const updateExerciseUseCase = new UpdateExerciseUseCase(exerciseRepository);
 const deleteExerciseUseCase = new DeleteExerciseUseCase(exerciseRepository);
 const getExerciseNameUseCase = new GetExerciseNamesUseCase(exerciseRepository);
 const getExerciseHistoryUseCase = new GetExerciseHistoryUsecase(exerciseRepository);
+const getStreakInfoUseCase = new GetStreakInfoUseCase(trainingSessionRepository);
 const trainingResolver = createTrainingResolver({
   CreateTrainingSessionUseCase: createTrainingSessionUseCase,
   UpdateTrainingSessionUseCase: updateTrainingSessionUseCase,
@@ -55,7 +57,8 @@ const trainingResolver = createTrainingResolver({
   GetTrainingSessionByDateUseCase: getTrainingSessionByDateUsecase,
   GetTrainingSessionsUseCase: getTrainingSessionsUseCase,
   GetTrainingSessionByIdUseCase: getTrainingSessionByIdUsecase,
-  GetTrainingDaysInMonthUseCase: getTrainingDaysInMounthUseCase,
+  GetTrainingDaysInMonthUseCase: getTrainingDaysInMonthUseCase,
+  GetStreakInfoUseCase: getStreakInfoUseCase,
 });
 
 const exerciseResolver = createExerciseResolver({
@@ -76,12 +79,6 @@ const resolvers = {
     ...exerciseResolver.Query,
     recentExerciseFrequency: (): [] => [],
     exerciseConsecutiveCount: (): number => 0,
-    streakInfo: () => ({
-      currentStreak: 0,
-      longestStreak: 0,
-      thisMonthCount: 0,
-      totalCount: 0,
-    }),
   },
 
   Mutation: {

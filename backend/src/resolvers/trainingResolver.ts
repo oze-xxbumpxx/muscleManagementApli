@@ -5,6 +5,7 @@ import { GetTrainingSessionByDateUseCase } from '@/usecases/getTrainingSessionBy
 import { GetTrainingSessionsUseCase } from '@/usecases/getTrainingSessionsUseCase';
 import { GetTrainingSessionByIdUseCase } from '@/usecases/getTrainingSessionByIdUseCase';
 import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMonthUsecase';
+import { GetStreakInfoUseCase } from '../usecases/getStreakInfoUseCase';
 
 type CreateTrainingSessionInput = Parameters<CreateTrainingSessionUseCase['execute']>[0];
 type UpdateTrainingSessionInput = Omit<
@@ -51,6 +52,7 @@ interface TrainingResolverDeps {
   GetTrainingSessionsUseCase: GetTrainingSessionsUseCase;
   GetTrainingSessionByIdUseCase: GetTrainingSessionByIdUseCase;
   GetTrainingDaysInMonthUseCase: GetTrainingDaysInMonthUseCase;
+  GetStreakInfoUseCase: GetStreakInfoUseCase;
 }
 
 export function createTrainingResolver(deps: TrainingResolverDeps) {
@@ -70,6 +72,9 @@ export function createTrainingResolver(deps: TrainingResolverDeps) {
           year: args.year,
           month: args.month,
         });
+      },
+      streakInfo: async () => {
+        return deps.GetStreakInfoUseCase.execute();
       },
     },
     Mutation: {
