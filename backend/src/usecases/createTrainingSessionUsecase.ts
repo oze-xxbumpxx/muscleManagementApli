@@ -77,7 +77,13 @@ export class CreateTrainingSessionUseCase {
 
       await this.exerciseRepository.createMany(exerciseInputs, transaction);
 
-      return session;
+      const withExercises = await this.trainingSessionRepository.findById(session.id, transaction);
+      if (withExercises === null) {
+        throw new Error(
+          `CreateTrainingSession: session id ${String(session.id)} not found after createMany`
+        );
+      }
+      return withExercises;
     });
     return createdSession;
   }

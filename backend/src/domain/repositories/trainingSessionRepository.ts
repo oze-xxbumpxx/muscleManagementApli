@@ -15,7 +15,7 @@ export interface ITrainingSessionRepository {
   create(input: TrainingSessionCreateInput, transaction?: Transaction): Promise<TrainingSession>;
 
   // Read
-  findById(id: number): Promise<TrainingSession | null>;
+  findById(id: number, transaction?: Transaction): Promise<TrainingSession | null>;
   findByDate(date: string): Promise<TrainingSession | null>;
   findByMonth(year: number, month: number): Promise<TrainingSession[]>;
   findTrainingDaysInMonth(year: number, month: number): Promise<TrainingDay[]>;

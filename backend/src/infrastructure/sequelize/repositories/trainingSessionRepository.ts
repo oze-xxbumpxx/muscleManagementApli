@@ -11,8 +11,16 @@ import type {
 } from '@/domain/types/trainingSession';
 import { mapTrainingSessionToDomain } from '@/infrastructure/sequelize/mappers';
 import { TrainingSession as TrainingSessionModel } from '@/models/trainingSession';
-import { Op, Transaction } from 'sequelize';
+import { Op, Transaction, type Includeable } from 'sequelize';
 import { Exercise as ExerciseModel } from '@/models/exercise';
+
+/** GraphQL / ドメインで exercises 必須のため、セッション取得時は原則これを include する */
+const SESSION_EXERCISES_INCLUDE: Includeable = {
+  model: ExerciseModel,
+  as: 'exercises',
+  separate: true,
+  order: [['order', 'ASC']],
+};
 
 interface TrainingDayAggregateRow {
   date: string;
@@ -123,13 +131,19 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
     return mapTrainingSessionToDomain(created);
   }
 
-  async findById(id: number): Promise<TrainingSession | null> {
-    const session = await TrainingSessionModel.findByPk(id);
+  async findById(id: number, transaction?: Transaction): Promise<TrainingSession | null> {
+    const session = await TrainingSessionModel.findByPk(id, {
+      include: [SESSION_EXERCISES_INCLUDE],
+      transaction,
+    });
     return session ? mapTrainingSessionToDomain(session) : null;
   }
 
   async findByDate(date: string): Promise<TrainingSession | null> {
-    const session = await TrainingSessionModel.findOne({ where: { date } });
+    const session = await TrainingSessionModel.findOne({
+      where: { date },
+      include: [SESSION_EXERCISES_INCLUDE],
+    });
     return session ? mapTrainingSessionToDomain(session) : null;
   }
 
@@ -145,6 +159,7 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
         },
       },
       order: [['date', 'DESC']],
+      include: [SESSION_EXERCISES_INCLUDE],
     });
     return sessions.map(mapTrainingSessionToDomain);
   }
@@ -183,7 +198,11 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
       limit,
       offset,
       order: [['date', 'DESC']],
+      include: [SESSION_EXERCISES_INCLUDE],
     });
+    if (typeof count !== 'number') {
+      throw new Error('TrainingSessionRepository.findAll: expected numeric count');
+    }
     return {
       totalCount: count,
       items: rows.map(mapTrainingSessionToDomain),
@@ -240,6 +259,10 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
       date: input.date ?? session.date,
       bodyWeight: input.bodyWeight !== undefined ? input.bodyWeight : session.bodyWeight,
       notes: input.notes !== undefined ? input.notes : session.notes,
+    });
+    await session.reload({
+      include: [SESSION_EXERCISES_INCLUDE],
+      transaction,
     });
     return mapTrainingSessionToDomain(session);
   }

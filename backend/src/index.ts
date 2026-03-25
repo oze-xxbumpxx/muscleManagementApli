@@ -1,3 +1,5 @@
+import 'dotenv/config';
+import '@/models/index';
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { readFileSync } from 'fs';

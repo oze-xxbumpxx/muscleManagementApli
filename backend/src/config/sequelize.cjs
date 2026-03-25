@@ -6,9 +6,9 @@ require('dotenv').config();
 
 module.exports = {
     development: {
-        username: process.env.DB_USER || 'user',
-        password: process.env.DB_PASSWORD || 'password',
-        database: process.env.DB_NAME || 'muscle_management_dev',
+        username: process.env.DB_USER || 'muscle_user',
+        password: process.env.DB_PASSWORD || 'muscle_password',
+        database: process.env.DB_NAME || 'muscle_management',
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '5432', 10),
         dialect: 'postgres',
@@ -19,8 +19,8 @@ module.exports = {
         },
     },
     test: {
-        username: process.env.DB_USER || 'user',
-        password: process.env.DB_PASSWORD || 'password',
+        username: process.env.DB_USER || 'test_user',
+        password: process.env.DB_PASSWORD || 'test_password',
         database: process.env.DB_NAME || 'muscle_management_test',
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '5433', 10),

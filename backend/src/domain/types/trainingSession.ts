@@ -1,8 +1,11 @@
+import type { Exercise } from './exercise';
+
 export interface TrainingSession {
   id: number;
   date: string;
   bodyWeight: number | null;
   notes: string | null;
+  exercises: Exercise[];
   createdAt: Date;
   updatedAt: Date;
 }

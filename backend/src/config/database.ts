@@ -13,14 +13,15 @@ interface DatabaseConfig {
 
 /**
  * 環境変数から設定を取得（デフォルト値付き）
+ * デフォルトはリポジトリ直下 docker-compose.yml の postgres サービスと一致
  */
 function getDatabaseConfig(): DatabaseConfig {
     return {
         host: process.env['DB_HOST'] ?? 'localhost',
         port: parseInt(process.env['DB_PORT'] ?? '5432', 10),
-        database: process.env['DB_NAME'] ?? 'muscle_management_dev',
-        username: process.env['DB_USER'] ?? 'user',
-        password: process.env['DB_PASSWORD'] ?? 'password',
+        database: process.env['DB_NAME'] ?? 'muscle_management',
+        username: process.env['DB_USER'] ?? 'muscle_user',
+        password: process.env['DB_PASSWORD'] ?? 'muscle_password',
     };
 }
 

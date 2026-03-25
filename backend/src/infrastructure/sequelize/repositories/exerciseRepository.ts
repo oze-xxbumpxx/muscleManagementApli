@@ -57,6 +57,8 @@ export class ExerciseRepository implements IExerciseRepository {
       return [];
     }
 
+    // bulkCreate は validate:true のとき、createdAt/updatedAt を付与する前に validate するため
+    // notNull 違反で AggregateError（GraphQL では message が空）になる。ユースケースの Zod と DB 制約で担保する。
     const created = await ExerciseModel.bulkCreate(
       inputs.map((input) => ({
         trainingSessionId: input.trainingSessionId,
@@ -69,7 +71,7 @@ export class ExerciseRepository implements IExerciseRepository {
         notes: input.notes,
       })),
       {
-        validate: true,
+        validate: false,
         returning: true,
         transaction,
       }
