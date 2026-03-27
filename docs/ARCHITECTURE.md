@@ -12,8 +12,11 @@ muscleManagementApli - システムアーキテクチャ
 |------|------|-----------|
 | React | UIライブラリ | 18.x |
 | TypeScript | 型安全性 | 5.x |
+| Vite | ビルド | 5.x |
 | GraphQL | API通信 | - |
 | Apollo Client | GraphQL Client | 3.x |
+| React Router | ルーティング | 6.x（導入予定） |
+| Tailwind CSS | スタイリング | （導入予定） |
 | Zod | バリデーション | 3.x |
 
 ### バックエンド
@@ -225,141 +228,36 @@ backend/src/
 
 ## フロントエンドアーキテクチャ
 
-### レイヤー分離戦略
+**詳細の正本**: [FRONTEND_ARCHITECTURE.md](./FRONTEND_ARCHITECTURE.md)（Presentational / Container、ディレクトリ、ルーティング、実装フェーズ、開始前の質問リスト）
 
-フロントエンドを3層に分離し、関心事を明確にする。
+### レイヤー分離（概念）
 
-### ディレクトリ構成
+フロントエンドは関心事を分離する。概念上は次の流れを維持する。
 
 ```
-src/
-├── features/
-│   └── training/
-│       ├── components/     ← UI層
-│       ├── pages/          ← route単位
-│       ├── hooks/          ← ViewModel層
-│       ├── api/            ← Data層（Apollo）
-│       ├── models/         ← 型/整形/Domain
-│       └── validation/     ← Zod
-├── shared/
-│   ├── components/
-│   ├── hooks/
-│   └── utils/
-└── graphql/
-    └── generated/          ← 自動生成された型
+UI（Presentational / Pages）→ hooks（ViewModel / Data）→ Apollo → GraphQL API
 ```
 
-### UI層（Components / Pages）
+**採用パターン（要約）**：
 
-**責務**：
-- 表示（見た目）
-- イベント（クリック、入力）
+- **Presentational**（`frontend/src/components/`）：表示・イベントのみ。Apollo を直接呼ばない。
+- **Container**（`frontend/src/containers/`）：Hook を呼び、props を Presentational に渡す。遷移の窓口になりやすい。
+- **hooks**（`frontend/src/hooks/`）：`useQuery` / `useMutation` のラッパー、Zod、フォーム状態など。
+- **graphql**（`frontend/src/graphql/`）：クエリ定義・（任意）Codegen 出力。
 
-**禁止事項**：
-- データ取得ロジック（Apollo/GraphQLなし）
-- ビジネスロジック
-- 状態管理ロジック
+旧ドキュメントの `features/training/` 配下構成の例は**採用しない**（フロントは `FRONTEND_ARCHITECTURE.md` のフラット構成で統一）。具体ツール（React Router v6、Tailwind CSS 等）とチェックリストも同ドキュメントを参照。
 
-**例**：
+### UI層の禁止事項（例）
+
 ```typescript
-// ✅ Good
-const TrainingRecordList = ({ records, onSelect }) => {
-  return (
-    <ul>
-      {records.map(record => (
-        <li key={record.id} onClick={() => onSelect(record.id)}>
-          {record.date}
-        </li>
-      ))}
-    </ul>
-  );
-};
+// ✅ Good：props で受け取り表示のみ
+const TrainingRecordList = ({ records, onSelect }) => { /* ... */ };
 
-// ❌ Bad
+// ❌ Bad：Presentational 内でデータ取得
 const TrainingRecordList = () => {
-  const { data } = useQuery(GET_RECORDS); // データ取得はNG
-  // ...
+  const { data } = useQuery(GET_RECORDS);
 };
 ```
-
----
-
-### ViewModel層（Hooks）
-
-**責務**：
-- 状態管理
-- 集計・整形
-- Validation（Zod）
-- Tactile State（タイマー）
-- Apollo レスポンス → UI変換
-
-**種類**：
-
-#### UI Hook
-- **役割**：イベント処理＋最低限のUI状態
-- **例**：モーダル開閉、フォーム入力
-
-```typescript
-// useTrainingFormUI.ts
-export const useTrainingFormUI = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-  
-  return { isModalOpen, openModal, closeModal };
-};
-```
-
-#### ViewModel Hook
-- **役割**：状態管理、集計/整形、Validation
-- **例**：フォーム全体の管理、データ整形
-
-```typescript
-// useTrainingFormViewModel.ts
-export const useTrainingFormViewModel = () => {
-  const [formData, setFormData] = useState<TrainingFormData>({});
-  
-  const validate = (data: TrainingFormData) => {
-    return trainingSchema.safeParse(data);
-  };
-  
-  const formatForDisplay = (data: TrainingData): UITrainingData => {
-    // API型 → UI型への変換
-  };
-  
-  return { formData, setFormData, validate, formatForDisplay };
-};
-```
-
-#### Data Hook
-- **役割**：Apollo専用、Query/Mutation＋生データ返却
-- **例**：GraphQLデータ取得
-
-```typescript
-// useTrainingData.ts
-export const useTrainingData = () => {
-  const { data, loading, error } = useQuery(GET_TRAINING_RECORDS);
-  
-  return { records: data?.trainingRecords, loading, error };
-};
-```
-
----
-
-### Data層（API / Apollo Client）
-
-**責務**：
-- GraphQL Query/Mutation
-- Apollo Clientの責務を集中
-
-**役割**：
-- データ取得・更新の窓口
-- キャッシュ管理
-- エラーハンドリング
-
-**禁止事項**：
-- ビジネスロジック
-- UI状態管理
 
 ---
 
@@ -403,9 +301,9 @@ UI → ViewModel → Data → GraphQL → Backend
 ### 3つの型を使い分ける
 
 #### 1. API型
-- **定義場所**：`graphql/generated/`
+- **定義場所**：`frontend/src/graphql/`（Codegen 利用時は生成先をこの配下に含めてもよい）
 - **用途**：GraphQLレスポンスそのまま
-- **使用者**：Apollo Client、Data Hook
+- **使用者**：Apollo Client、Data Hook（詳細は [FRONTEND_ARCHITECTURE.md](./FRONTEND_ARCHITECTURE.md)）
 
 ```typescript
 // API型の例
@@ -422,7 +320,7 @@ type TrainingRecordResponse = {
 ```
 
 #### 2. Domain型
-- **定義場所**：`features/training/models/`
+- **定義場所**：`frontend/src/hooks/` 近傍または専用 `models/`・`mappers/`（要決定）
 - **用途**：集計や演算をするための型
 - **使用者**：ViewModel Hook
 
@@ -437,7 +335,7 @@ type TrainingRecord = {
 ```
 
 #### 3. UI型
-- **定義場所**：`features/training/models/`
+- **定義場所**：上記に準ずる（Presentational が依存する表示用の狭い型）
 - **用途**：表示目的で整形された型
 - **使用者**：UI Layer
 
@@ -576,4 +474,5 @@ export const useTimerViewModel = () => {
 
 ## 更新履歴
 
+- 2026-03-25：フロントエンド詳細を [FRONTEND_ARCHITECTURE.md](./FRONTEND_ARCHITECTURE.md) に分離。ディレクトリ方針を Presentational/Container（フラット構成）に更新。
 - 2026-01-21：初版作成

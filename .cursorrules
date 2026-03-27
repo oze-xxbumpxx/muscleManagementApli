@@ -154,26 +154,23 @@ const user = userSchema.parse(data);
 Resolver → UseCase → Repository → DB
 ```
 
-### フロントエンド（3層レイヤー）
+### フロントエンド（Presentational / Container + 3層）
 ```
-UI (Components) → ViewModel (Hooks) → Data (Apollo/GraphQL)
+Presentational (components) ← Container ← hooks (ViewModel / Data + Apollo) → GraphQL
 ```
+詳細・フェーズ・開始前の決定事項は **docs/FRONTEND_ARCHITECTURE.md** を正とする。
 
 ### ディレクトリ構成（フロントエンド）
 ```
-src/
-├── features/
-│   └── training/
-│       ├── components/     # UI層（PascalCase.tsx）
-│       ├── pages/          # ページ
-│       ├── hooks/          # ViewModel層
-│       ├── api/            # Data層
-│       ├── models/         # 型定義
-│       └── validation/     # Zod
-└── shared/
-    ├── components/
-    ├── hooks/
-    └── utils/
+frontend/src/
+├── components/      # Presentational（Apollo を直接呼ばない）
+├── containers/      # Hook を束ね props 連携・遷移の窓口
+├── hooks/           # useQuery / useMutation ラッパー、Zod、フォーム状態
+├── pages/           # ルート単位で Container を配置
+├── routes/          # React Router
+├── graphql/         # クエリ定義・（任意）Codegen
+├── context/         # Toast 等
+└── main.tsx
 ```
 
 ### ディレクトリ構成（バックエンド）
@@ -192,10 +189,9 @@ src/
 ## 技術スタック
 
 ### フロントエンド
-- React
-- TypeScript
-- GraphQL
-- Apollo Client
+- React 18 + TypeScript 5 + Vite
+- React Router v6（導入予定） / Tailwind CSS（導入予定）
+- GraphQL + Apollo Client 3
 - Zod
 
 ### バックエンド

@@ -48,6 +48,8 @@ Resolver → UseCase → Domain ← Infrastructure → DB
 UI Layer → ViewModel Hook → Data Hook (Apollo) → GraphQL API
 ```
 
+実装ディレクトリ・Container パターン・フェーズ・開始前の決定事項は **docs/FRONTEND_ARCHITECTURE.md** を参照。
+
 ## コマンド
 
 ```bash

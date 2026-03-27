@@ -70,6 +70,12 @@
   },
   "overrides": [
     {
+      "files": ["frontend/**/*.ts", "frontend/**/*.tsx"],
+      "env": {
+        "browser": true
+      }
+    },
+    {
       "files": ["**/*.test.ts", "**/*.spec.ts", "**/test/**/*.ts"],
       "rules": {
         "@typescript-eslint/no-explicit-any": "warn",

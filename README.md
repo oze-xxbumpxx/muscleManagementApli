@@ -56,6 +56,7 @@
 - [AI協働ルール](./AI_COLLABORATION_RULES.md)
 - [要件定義書](./docs/REQUIREMENTS.md)
 - [アーキテクチャ設計書](./docs/ARCHITECTURE.md)
+- [フロントエンド設計書](./docs/FRONTEND_ARCHITECTURE.md)
 
 ---
 
