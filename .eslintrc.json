@@ -76,6 +76,14 @@
       }
     },
     {
+      "files": ["frontend/src/graphql/generated/**/*.ts"],
+      "rules": {
+        "@typescript-eslint/consistent-type-definitions": "off",
+        "@typescript-eslint/consistent-type-assertions": "off",
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
+    {
       "files": ["**/*.test.ts", "**/*.spec.ts", "**/test/**/*.ts"],
       "rules": {
         "@typescript-eslint/no-explicit-any": "warn",

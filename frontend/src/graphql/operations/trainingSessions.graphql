@@ -1,0 +1,21 @@
+# フェーズ2でフィールドを拡張してください
+query TrainingSessions($limit: Int, $offset: Int) {
+  trainingSessions(limit: $limit, offset: $offset) {
+    totalCount
+    items {
+      id
+      date
+      bodyWeight
+      notes
+      exercises {
+        id
+        exerciseName
+        order
+        sets
+        reps
+        durationSeconds
+        weight
+      }
+    }
+  }
+}

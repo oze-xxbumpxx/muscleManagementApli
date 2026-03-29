@@ -16,6 +16,6 @@
         "@graphql/*": ["graphql/*"]
       }
     },
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "codegen.ts", "vite.config.ts"],
     "exclude": ["node_modules", "dist"]
   }
