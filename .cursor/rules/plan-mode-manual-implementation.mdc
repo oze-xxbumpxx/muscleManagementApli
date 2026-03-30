@@ -8,7 +8,7 @@ alwaysApply: true
 - In Plan mode, stop at design, task breakdown, and implementation guidance.
 - Do not make code edits, create files, or apply configuration changes while still in Plan mode.
 - Default to manual implementation by the developer, even after the plan is complete.
-- **Plan の出し方**は [`plan-and-implementation-guide-format.mdc`](./plan-and-implementation-guide-format.mdc) の **1〜6 章立て**に従う（セクション 4 に **実装コードテンプレート** を含めてよい）。
+- **Plan の出し方**は [`plan-and-implementation-guide-format.mdc`](./plan-and-implementation-guide-format.mdc) の **1〜7 章立て**に従う。**セクション 3** に **推奨アーキテクチャ（Mermaid 図＋コンポーネント責務の表／説明）** を必ず含める。セクション 5 に **実装コードテンプレート** を含めてよい。
 - Plan mode 以外でコード例だけが欲しい場合は、従来どおりユーザー依頼に応じて最小限にする。
 - If implementation help is requested in Plan mode, provide steps and review support instead of editing files.
 - Only move from planning to automatic implementation when the user explicitly asks for automatic implementation.

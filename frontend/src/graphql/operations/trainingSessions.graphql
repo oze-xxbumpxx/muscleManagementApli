@@ -1,4 +1,3 @@
-# フェーズ2でフィールドを拡張してください
 query TrainingSessions($limit: Int, $offset: Int) {
   trainingSessions(limit: $limit, offset: $offset) {
     totalCount
@@ -16,6 +15,25 @@ query TrainingSessions($limit: Int, $offset: Int) {
         durationSeconds
         weight
       }
+    }
+  }
+}
+
+query TrainingSession($id: Int!) {
+  trainingSession(id: $id) {
+    id
+    date
+    bodyWeight
+    notes
+    exercises {
+      id
+      exerciseName
+      order
+      sets
+      reps
+      durationSeconds
+      weight
+      notes
     }
   }
 }
