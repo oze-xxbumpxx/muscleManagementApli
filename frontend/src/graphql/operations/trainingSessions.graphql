@@ -37,3 +37,10 @@ query TrainingSession($id: Int!) {
     }
   }
 }
+
+mutation CreateTrainingSession($input: CreateTrainingSessionInput!) {
+  createTrainingSession(input: $input) {
+    id
+    date
+  }
+}
