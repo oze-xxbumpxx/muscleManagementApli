@@ -46,6 +46,7 @@ const createExercisePayloadSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: '回数または秒数のどちらか一方を入力してください',
+        path: ['reps'],
       });
     }
   });
@@ -57,7 +58,7 @@ export const createTrainingSessionPayloadSchema = z.object({
   exercises: z.array(createExercisePayloadSchema).min(1, '種目を１つ以上追加してください'),
 });
 
-export type CreateTrainingSessionPayload = z.infer<typeof createExercisePayloadSchema>;
+export type CreateTrainingSessionPayload = z.infer<typeof createTrainingSessionPayloadSchema>;
 
 export function zodErrorToFieldMessages(error: z.ZodError): Record<string, string> {
   const map: Record<string, string> = {};

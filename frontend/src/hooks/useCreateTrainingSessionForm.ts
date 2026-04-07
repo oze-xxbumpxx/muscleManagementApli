@@ -80,7 +80,6 @@ export interface UseCreateTrainingSessionFormResult {
   readonly setNotes: (v: string) => void;
   readonly exerciseRows: readonly ExerciseFormRow[];
   readonly fieldErrors: Record<string, string>;
-  readonly setFieldErrors: (m: Record<string, string>) => void;
   readonly addExerciseRow: () => void;
   readonly removeExerciseRow: (clientId: string) => void;
   readonly updateExerciseRow: (
@@ -91,8 +90,8 @@ export interface UseCreateTrainingSessionFormResult {
   readonly submitting: boolean;
 }
 
-export function useCerateTrainingSessionForm(): UseCreateTrainingSessionFormResult {
-  const [date, setDate] = useState('');
+export function useCreateTrainingSessionForm(): UseCreateTrainingSessionFormResult {
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [bodyWeight, setBodyWeight] = useState('');
   const [notes, setNotes] = useState('');
   const [exerciseRows, setExerciseRows] = useState<ExerciseFormRow[]>([emptyExerciseFromRow()]);
@@ -145,7 +144,6 @@ export function useCerateTrainingSessionForm(): UseCreateTrainingSessionFormResu
     setNotes,
     exerciseRows,
     fieldErrors,
-    setFieldErrors,
     addExerciseRow,
     removeExerciseRow,
     updateExerciseRow,
