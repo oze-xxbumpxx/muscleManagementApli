@@ -1,6 +1,5 @@
 import {
   CreateTrainingSessionDocument,
-  type CreateTrainingSessionInput,
   type CreateTrainingSessionMutation,
   TrainingSessionsDocument,
 } from '@/graphql/generated/graphql';
@@ -8,6 +7,7 @@ import {
   createTrainingSessionPayloadSchema,
   zodErrorToFieldMessages,
 } from '@/validation/trainingSessionCreate';
+import z from 'zod';
 import { useMutation } from '@apollo/client';
 import { useCallback, useState } from 'react';
 
@@ -45,7 +45,7 @@ function buildPayload(
   bodyWeight: string,
   notesText: string,
   rows: readonly ExerciseFormRow[]
-): CreateTrainingSessionInput {
+): z.input<typeof createTrainingSessionPayloadSchema> {
   const exercises = rows.map((row, index) => {
     const repsT = row.reps.trim();
     const durT = row.durationSeconds.trim();

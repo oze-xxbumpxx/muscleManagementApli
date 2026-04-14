@@ -2,7 +2,7 @@ import { useToast } from '@/context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import { useCreateTrainingSessionForm } from '@/hooks/useCreateTrainingSessionForm';
 import { useCallback } from 'react';
-import { TrainingSessionCreateForm } from '@/components/trainingSessionCreateForm';
+import { TrainingSessionCreateForm } from '@/components/shared/training/TrainingSessionCreateForm';
 
 export function TrainingSessionCreateContainer(): React.JSX.Element {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export function TrainingSessionCreateContainer(): React.JSX.Element {
       const message = e instanceof Error ? e.message : '保存に失敗しました';
       showToast(message, 'error');
     }
-  }, [form, navigate, showToast]);
+  }, [form.submit, navigate, showToast]);
 
   return (
     <TrainingSessionCreateForm

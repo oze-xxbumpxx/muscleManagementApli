@@ -1,16 +1,13 @@
 import type { TrainingSessionQuery } from '@/graphql/generated/graphql';
+import { Link } from 'react-router-dom';
 
-type TrainingSessionDetailModel = NonNullable<
-  TrainingSessionQuery['trainingSession']
->;
+type TrainingSessionDetailModel = NonNullable<TrainingSessionQuery['trainingSession']>;
 
 export interface TrainingSessionDetailProps {
   readonly session: TrainingSessionDetailModel;
 }
 
-export function TrainingSessionDetail(
-  props: TrainingSessionDetailProps
-): React.JSX.Element {
+export function TrainingSessionDetail(props: TrainingSessionDetailProps): React.JSX.Element {
   const { session } = props;
 
   return (
@@ -18,15 +15,19 @@ export function TrainingSessionDetail(
       <div>
         <h2 className="text-lg font-semibold text-slate-900">{session.date}</h2>
         {session.bodyWeight != null && (
-          <p className="mt-1 text-sm text-slate-600">
-            体重: {session.bodyWeight} kg
-          </p>
+          <p className="mt-1 text-sm text-slate-600">体重: {session.bodyWeight} kg</p>
         )}
         {session.notes != null && session.notes !== '' && (
           <p className="mt-2 text-sm text-slate-700">{session.notes}</p>
         )}
       </div>
       <div>
+        <Link
+          to={`/sessions/${session.id}/edit`}
+          className="text-sm font-medium text-slate-900 underline"
+        >
+          編集
+        </Link>
         <h3 className="text-sm font-medium text-slate-800">種目</h3>
         <ul className="mt-2 divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
           {session.exercises.map(ex => (

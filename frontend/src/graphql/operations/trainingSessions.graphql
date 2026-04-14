@@ -44,3 +44,12 @@ mutation CreateTrainingSession($input: CreateTrainingSessionInput!) {
     date
   }
 }
+
+mutation UpdateTrainingSession($id: Int!, $input: UpdateTrainingSessionInput!) {
+  updateTrainingSession(id: $id, input: $input) {
+    id
+    date
+    bodyWeight
+    notes
+  }
+}

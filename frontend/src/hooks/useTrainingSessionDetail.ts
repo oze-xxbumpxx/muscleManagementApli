@@ -12,6 +12,7 @@ export function useTrainingSessionDetail(
 ): UseTrainingSessionDetailResult {
   const { data, loading, error } = useQuery(TrainingSessionDocument, {
     variables: { id: sessionId ?? 0 },
+    skip: sessionId === undefined,
   });
 
   return {
