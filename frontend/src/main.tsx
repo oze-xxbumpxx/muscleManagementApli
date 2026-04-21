@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { apolloClient } from '@/apollo/client';
 import { ToastProvider } from '@/context/ToastContext';
 import { AppRoutes } from '@/routes';
+import 'react-day-picker/style.css';
 import './index.css';
 
 const rootElement = document.getElementById('root');

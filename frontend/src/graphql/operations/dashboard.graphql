@@ -1,0 +1,23 @@
+# =============================================================================
+# muscleManagementApli - GraphQL Operations
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Dashboard
+# -----------------------------------------------------------------------------
+
+query StreakInfo {
+  streakInfo {
+    currentStreak
+    longestStreak
+    thisMonthCount
+    totalCount
+  }
+}
+
+query TrainingDaysInMonth($year: Int!, $month: Int!) {
+  trainingDaysInMonth(year: $year, month: $month) {
+    date
+    exerciseCount
+  }
+}
