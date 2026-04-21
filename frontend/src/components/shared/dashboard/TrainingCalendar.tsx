@@ -52,7 +52,7 @@ export function TrainingCalendar(props: TrainingCalendarProps): React.JSX.Elemen
   return (
     <section
       aria-labelledby="calender-heading"
-      className="rounded-lg boarder-slate-200 bg-white p-4"
+      className="rounded-lg border-slate-200 bg-white p-4"
     >
       <h2 id="calender-heading" className="text-lg font-semibold text-slate-900">
         トレーニングカレンダー
