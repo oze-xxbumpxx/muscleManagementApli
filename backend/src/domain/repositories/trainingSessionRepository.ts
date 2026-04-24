@@ -9,6 +9,7 @@ import type {
   TrainingSessionStreakSummary,
   TrainingSessionUpdateInput,
 } from '../types/trainingSession';
+import type { ExerciseFrequency } from '../types/exercise';
 
 export interface ITrainingSessionRepository {
   // Create
@@ -20,6 +21,8 @@ export interface ITrainingSessionRepository {
   findByMonth(year: number, month: number): Promise<TrainingSession[]>;
   findTrainingDaysInMonth(year: number, month: number): Promise<TrainingDay[]>;
   findAll(query: TrainingSessionListQuery): Promise<TrainingSessionListResult>;
+  findRecentExerciseFrequency(sessionCount: number): Promise<ExerciseFrequency[]>;
+  findConsecutiveExerciseCount(exerciseName: string): Promise<number>;
 
   // Update
   update(

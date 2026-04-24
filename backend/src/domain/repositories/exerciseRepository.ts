@@ -7,6 +7,7 @@ import type {
   ExerciseHistoryQuery,
   ExerciseListQuery,
   ExerciseListResult,
+  ExerciseReorderInput,
   ExerciseUpdateInput,
 } from '../types/exercise';
 
@@ -21,7 +22,8 @@ export interface IExerciseRepository {
   findAll(query: ExerciseListQuery): Promise<ExerciseListResult>;
   findExerciseNames(): Promise<string[]>;
   findExerciseHistory(query: ExerciseHistoryQuery): Promise<ExerciseHistoryItem[]>;
-  // Update
+  reorder(inputs: ExerciseReorderInput[], transaction?: Transaction): Promise<Exercise[]>;
+  // update
   update(
     id: number,
     input: ExerciseUpdateInput,

@@ -1,4 +1,5 @@
 import type { ITrainingSessionRepository } from '@/domain/repositories/trainingSessionRepository';
+import type { ExerciseFrequency } from '@/domain/types/exercise';
 import type {
   TrainingDay,
   TrainingSession,
@@ -207,6 +208,47 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
       totalCount: count,
       items: rows.map(mapTrainingSessionToDomain),
     };
+  }
+
+  async findRecentExerciseFrequency(sessionCount: number): Promise<ExerciseFrequency[]> {
+    const sessions = await TrainingSessionModel.findAll({
+      order: [['date', 'DESC']],
+      limit: sessionCount,
+      include: [{ model: ExerciseModel, as: 'exercises', attributes: ['exerciseName'] }],
+    });
+
+    const countByExerciseName = new Map<string, number>();
+    for (const session of sessions) {
+      for (const exercise of session.exercises ?? []) {
+        countByExerciseName.set(
+          exercise.exerciseName,
+          (countByExerciseName.get(exercise.exerciseName) ?? 0) + 1
+        );
+      }
+    }
+
+    return [...countByExerciseName.entries()]
+      .map(([exerciseName, count]) => ({ exerciseName, count }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  async findConsecutiveExerciseCount(exerciseName: string): Promise<number> {
+    const sessions = await TrainingSessionModel.findAll({
+      order: [['date', 'DESC']],
+      include: [{ model: ExerciseModel, as: 'exercises', attributes: ['exerciseName'] }],
+    });
+
+    let count = 0;
+    for (const session of sessions) {
+      const hasExercise = (session.exercises ?? []).some(
+        (exercise) => exercise.exerciseName === exerciseName
+      );
+      if (!hasExercise) {
+        break;
+      }
+      count++;
+    }
+    return count;
   }
 
   async getStreakSummary(): Promise<TrainingSessionStreakSummary> {

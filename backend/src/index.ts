@@ -23,6 +23,7 @@ import { GetExerciseNamesUseCase } from '@/usecases/getExerciseNamesUseCase';
 import { GetExerciseHistoryUsecase } from '@/usecases/getExerciseHistoryUsecase';
 import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMonthUsecase';
 import { GetStreakInfoUseCase } from './usecases/getStreakInfoUseCase';
+import { GetRecentExerciseFrequencyUseCase } from '@/usecases/getRecentExerciseFrequencyUseCase';
 
 /**
  * GraphQLスキーマを読み込む
@@ -46,6 +47,9 @@ const getTrainingSessionByDateUsecase = new GetTrainingSessionByDateUseCase(
 const getTrainingSessionByIdUsecase = new GetTrainingSessionByIdUseCase(trainingSessionRepository);
 const getTrainingSessionsUseCase = new GetTrainingSessionsUseCase(trainingSessionRepository);
 const getTrainingDaysInMonthUseCase = new GetTrainingDaysInMonthUseCase(trainingSessionRepository);
+const getRecentExerciseFrequencyUseCase = new GetRecentExerciseFrequencyUseCase(
+  trainingSessionRepository
+);
 const addExerciseUseCase = new AddExerciseUseCase(exerciseRepository, trainingSessionRepository);
 const updateExerciseUseCase = new UpdateExerciseUseCase(exerciseRepository);
 const deleteExerciseUseCase = new DeleteExerciseUseCase(exerciseRepository);
@@ -61,6 +65,7 @@ const trainingResolver = createTrainingResolver({
   GetTrainingSessionByIdUseCase: getTrainingSessionByIdUsecase,
   GetTrainingDaysInMonthUseCase: getTrainingDaysInMonthUseCase,
   GetStreakInfoUseCase: getStreakInfoUseCase,
+  GetRecentExerciseFrequencyUseCase: getRecentExerciseFrequencyUseCase,
 });
 
 const exerciseResolver = createExerciseResolver({
@@ -79,7 +84,6 @@ const resolvers = {
     // TODO: 実装予定
     ...trainingResolver.Query,
     ...exerciseResolver.Query,
-    recentExerciseFrequency: (): [] => [],
     exerciseConsecutiveCount: (): number => 0,
   },
 

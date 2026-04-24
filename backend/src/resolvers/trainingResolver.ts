@@ -6,6 +6,7 @@ import { GetTrainingSessionsUseCase } from '@/usecases/getTrainingSessionsUseCas
 import { GetTrainingSessionByIdUseCase } from '@/usecases/getTrainingSessionByIdUseCase';
 import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMonthUsecase';
 import { GetStreakInfoUseCase } from '../usecases/getStreakInfoUseCase';
+import { GetRecentExerciseFrequencyUseCase } from '@/usecases/getRecentExerciseFrequencyUseCase';
 
 type CreateTrainingSessionInput = Parameters<CreateTrainingSessionUseCase['execute']>[0];
 type UpdateTrainingSessionInput = Omit<
@@ -44,6 +45,10 @@ interface GetTrainingDaysInMonthArgs {
   month: number;
 }
 
+interface GetRecentExerciseFrequencyArgs {
+  sessionCount: number;
+}
+
 interface TrainingResolverDeps {
   CreateTrainingSessionUseCase: CreateTrainingSessionUseCase;
   UpdateTrainingSessionUseCase: UpdateTrainingSessionUseCase;
@@ -53,6 +58,7 @@ interface TrainingResolverDeps {
   GetTrainingSessionByIdUseCase: GetTrainingSessionByIdUseCase;
   GetTrainingDaysInMonthUseCase: GetTrainingDaysInMonthUseCase;
   GetStreakInfoUseCase: GetStreakInfoUseCase;
+  GetRecentExerciseFrequencyUseCase: GetRecentExerciseFrequencyUseCase;
 }
 
 export function createTrainingResolver(deps: TrainingResolverDeps) {
@@ -75,6 +81,9 @@ export function createTrainingResolver(deps: TrainingResolverDeps) {
       },
       streakInfo: async () => {
         return deps.GetStreakInfoUseCase.execute();
+      },
+      recentExerciseFrequency: async (_parent: unknown, args: GetRecentExerciseFrequencyArgs) => {
+        return deps.GetRecentExerciseFrequencyUseCase.execute({ sessionCount: args.sessionCount });
       },
     },
     Mutation: {

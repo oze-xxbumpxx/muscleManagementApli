@@ -73,3 +73,8 @@ export interface ExerciseDeleteResult {
   success: boolean;
   deletedId: number | null;
 }
+
+export interface ExerciseFrequency {
+  exerciseName: string;
+  count: number;
+}
