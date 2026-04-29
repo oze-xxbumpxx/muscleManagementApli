@@ -3,6 +3,8 @@ import { UpdateExerciseUseCase } from '@/usecases/updateExerciseUseCase';
 import { DeleteExerciseUseCase } from '@/usecases/deleteExerciseUseCase';
 import { GetExerciseNamesUseCase } from '@/usecases/getExerciseNamesUseCase';
 import { GetExerciseHistoryUsecase } from '@/usecases/getExerciseHistoryUsecase';
+import { GetExerciseConsecutiveCountUseCase } from '../usecases/getExerciseConsecutiveCountUseCase';
+import { ReorderExercisesUseCase } from '../usecases/reorderExercisesUseCase';
 
 type AddExerciseInput = Omit<Parameters<AddExerciseUseCase['execute']>[0], 'trainingSessionId'>;
 type UpdateExerciseInput = Omit<Parameters<UpdateExerciseUseCase['execute']>[0], 'id'>;
@@ -24,12 +26,23 @@ interface GetExerciseHistoryArgs {
   limit: number;
 }
 
+interface GetExerciseConsecutiveCountArgs {
+  exerciseName: string;
+}
+
+interface ReorderExerciseArgs {
+  trainingSessionId: number;
+  exerciseIds: number[];
+}
+
 interface ExerciseResolverDeps {
   AddExerciseUseCase: AddExerciseUseCase;
   UpdateExerciseUseCase: UpdateExerciseUseCase;
   DeleteExerciseUseCase: DeleteExerciseUseCase;
   GetExerciseNameUseCase: GetExerciseNamesUseCase;
   GetExerciseHistoryUseCase: GetExerciseHistoryUsecase;
+  GetExerciseConsecutiveCountUseCase: GetExerciseConsecutiveCountUseCase;
+  ReorderExercisesUseCase: ReorderExercisesUseCase;
 }
 
 export function createExerciseResolver(deps: ExerciseResolverDeps) {
@@ -44,8 +57,14 @@ export function createExerciseResolver(deps: ExerciseResolverDeps) {
           limit: args.limit,
         });
       },
+      exerciseConsecutiveCount: async (_parent: unknown, args: GetExerciseConsecutiveCountArgs) => {
+        return deps.GetExerciseConsecutiveCountUseCase.execute(args);
+      },
     },
     Mutation: {
+      reorderExercises: async (_parent: unknown, args: ReorderExerciseArgs) => {
+        return deps.ReorderExercisesUseCase.execute(args);
+      },
       addExercise: async (_parent: unknown, args: AddExerciseArgs) => {
         return deps.AddExerciseUseCase.execute({
           trainingSessionId: args.trainingSessionId,

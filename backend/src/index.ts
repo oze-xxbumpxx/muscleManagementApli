@@ -1,29 +1,31 @@
-import 'dotenv/config';
 import '@/models/index';
+import { createExerciseResolver } from '@/resolvers/exerciseResolver';
+import { AddExerciseUseCase } from '@/usecases/addExerciseUseCase';
+import { CreateTrainingSessionUseCase } from '@/usecases/createTrainingSessionUsecase';
+import { DeleteExerciseUseCase } from '@/usecases/deleteExerciseUseCase';
+import { DeleteTrainingSessionUseCase } from '@/usecases/deleteTrainingSessionUsecase';
+import { GetExerciseHistoryUsecase } from '@/usecases/getExerciseHistoryUsecase';
+import { GetExerciseNamesUseCase } from '@/usecases/getExerciseNamesUseCase';
+import { GetRecentExerciseFrequencyUseCase } from '@/usecases/getRecentExerciseFrequencyUseCase';
+import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMonthUsecase';
+import { GetTrainingSessionByDateUseCase } from '@/usecases/getTrainingSessionByDateUsecase';
+import { GetTrainingSessionByIdUseCase } from '@/usecases/getTrainingSessionByIdUseCase';
+import { GetTrainingSessionsUseCase } from '@/usecases/getTrainingSessionsUseCase';
+import { UpdateExerciseUseCase } from '@/usecases/updateExerciseUseCase';
+import { UpdateTrainingSessionUseCase } from '@/usecases/updateTrainingSessionUsecase';
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
+import 'dotenv/config';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { testConnection } from './config/database';
+import { scalarResolvers } from './graphql/scalars';
 import { ExerciseRepository } from './infrastructure/sequelize/repositories/exerciseRepository';
 import { TrainingSessionRepository } from './infrastructure/sequelize/repositories/trainingSessionRepository';
 import { createTrainingResolver } from './resolvers/trainingResolver';
-import { scalarResolvers } from './graphql/scalars';
-import { testConnection } from './config/database';
-import { CreateTrainingSessionUseCase } from '@/usecases/createTrainingSessionUsecase';
-import { UpdateTrainingSessionUseCase } from '@/usecases/updateTrainingSessionUsecase';
-import { DeleteTrainingSessionUseCase } from '@/usecases/deleteTrainingSessionUsecase';
-import { GetTrainingSessionByDateUseCase } from '@/usecases/getTrainingSessionByDateUsecase';
-import { GetTrainingSessionsUseCase } from '@/usecases/getTrainingSessionsUseCase';
-import { GetTrainingSessionByIdUseCase } from '@/usecases/getTrainingSessionByIdUseCase';
-import { AddExerciseUseCase } from '@/usecases/addExerciseUseCase';
-import { createExerciseResolver } from '@/resolvers/exerciseResolver';
-import { UpdateExerciseUseCase } from '@/usecases/updateExerciseUseCase';
-import { DeleteExerciseUseCase } from '@/usecases/deleteExerciseUseCase';
-import { GetExerciseNamesUseCase } from '@/usecases/getExerciseNamesUseCase';
-import { GetExerciseHistoryUsecase } from '@/usecases/getExerciseHistoryUsecase';
-import { GetTrainingDaysInMonthUseCase } from '@/usecases/getTrainingDaysInMonthUsecase';
+import { GetExerciseConsecutiveCountUseCase } from './usecases/getExerciseConsecutiveCountUseCase';
 import { GetStreakInfoUseCase } from './usecases/getStreakInfoUseCase';
-import { GetRecentExerciseFrequencyUseCase } from '@/usecases/getRecentExerciseFrequencyUseCase';
+import { ReorderExercisesUseCase } from './usecases/reorderExercisesUseCase';
 
 /**
  * GraphQLスキーマを読み込む
@@ -50,6 +52,13 @@ const getTrainingDaysInMonthUseCase = new GetTrainingDaysInMonthUseCase(training
 const getRecentExerciseFrequencyUseCase = new GetRecentExerciseFrequencyUseCase(
   trainingSessionRepository
 );
+const getExerciseConsecutiveCountUseCase = new GetExerciseConsecutiveCountUseCase(
+  trainingSessionRepository
+);
+const reorderExercisesUseCase = new ReorderExercisesUseCase(
+  exerciseRepository,
+  trainingSessionRepository
+);
 const addExerciseUseCase = new AddExerciseUseCase(exerciseRepository, trainingSessionRepository);
 const updateExerciseUseCase = new UpdateExerciseUseCase(exerciseRepository);
 const deleteExerciseUseCase = new DeleteExerciseUseCase(exerciseRepository);
@@ -74,6 +83,8 @@ const exerciseResolver = createExerciseResolver({
   DeleteExerciseUseCase: deleteExerciseUseCase,
   GetExerciseNameUseCase: getExerciseNameUseCase,
   GetExerciseHistoryUseCase: getExerciseHistoryUseCase,
+  GetExerciseConsecutiveCountUseCase: getExerciseConsecutiveCountUseCase,
+  ReorderExercisesUseCase: reorderExercisesUseCase,
 });
 
 const resolvers = {
@@ -81,17 +92,13 @@ const resolvers = {
   ...scalarResolvers,
 
   Query: {
-    // TODO: 実装予定
     ...trainingResolver.Query,
     ...exerciseResolver.Query,
-    exerciseConsecutiveCount: (): number => 0,
   },
 
   Mutation: {
-    // TODO: 実装予定
     ...trainingResolver.Mutation,
     ...exerciseResolver.Mutation,
-    reorderExercises: (): [] => [],
   },
 };
 

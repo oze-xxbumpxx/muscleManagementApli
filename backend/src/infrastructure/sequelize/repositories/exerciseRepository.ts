@@ -13,7 +13,7 @@ import {
 } from '@/domain/types/exercise';
 import { Exercise as ExerciseModel } from '@/models/exercise';
 import { mapExerciseToDomain, toNumberOrNull } from '../mappers';
-import { col, fn, Op, Transaction } from 'sequelize';
+import { col, fn, Transaction } from 'sequelize';
 
 interface TrainingSessionHistoryShape {
   date: string;
@@ -157,25 +157,6 @@ export class ExerciseRepository implements IExerciseRepository {
     });
   }
 
-  async reorder(inputs: ExerciseReorderInput[], transaction?: Transaction): Promise<Exercise[]> {
-    if (inputs.length === 0) {
-      return [];
-    }
-
-    await Promise.all(
-      inputs.map((input) =>
-        ExerciseModel.update({ order: input.order }, { where: { id: input.id }, transaction })
-      )
-    );
-
-    const updated = await ExerciseModel.findAll({
-      where: { id: { [Op.in]: inputs.map((input) => input.id) } },
-      order: [['order', 'ASC']],
-      transaction,
-    });
-    return updated.map(mapExerciseToDomain);
-  }
-
   async update(
     id: number,
     input: ExerciseUpdateInput,
@@ -213,5 +194,28 @@ export class ExerciseRepository implements IExerciseRepository {
       success: deletedCount > 0,
       deletedId: deletedCount > 0 ? id : null,
     };
+  }
+
+  async reorder(inputs: ExerciseReorderInput[], transaction?: Transaction): Promise<Exercise[]> {
+    await Promise.all(
+      inputs.map((input) =>
+        ExerciseModel.update(
+          {
+            order: input.order,
+          },
+          {
+            where: { id: input.id },
+            transaction,
+          }
+        )
+      )
+    );
+
+    const updated = await ExerciseModel.findAll({
+      where: { id: inputs.map((input) => input.id) },
+      order: [['order', 'ASC']],
+      transaction,
+    });
+    return updated.map(mapExerciseToDomain);
   }
 }

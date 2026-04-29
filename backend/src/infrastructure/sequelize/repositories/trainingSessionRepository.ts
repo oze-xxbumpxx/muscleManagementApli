@@ -210,47 +210,6 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
     };
   }
 
-  async findRecentExerciseFrequency(sessionCount: number): Promise<ExerciseFrequency[]> {
-    const sessions = await TrainingSessionModel.findAll({
-      order: [['date', 'DESC']],
-      limit: sessionCount,
-      include: [{ model: ExerciseModel, as: 'exercises', attributes: ['exerciseName'] }],
-    });
-
-    const countByExerciseName = new Map<string, number>();
-    for (const session of sessions) {
-      for (const exercise of session.exercises ?? []) {
-        countByExerciseName.set(
-          exercise.exerciseName,
-          (countByExerciseName.get(exercise.exerciseName) ?? 0) + 1
-        );
-      }
-    }
-
-    return [...countByExerciseName.entries()]
-      .map(([exerciseName, count]) => ({ exerciseName, count }))
-      .sort((a, b) => b.count - a.count);
-  }
-
-  async findConsecutiveExerciseCount(exerciseName: string): Promise<number> {
-    const sessions = await TrainingSessionModel.findAll({
-      order: [['date', 'DESC']],
-      include: [{ model: ExerciseModel, as: 'exercises', attributes: ['exerciseName'] }],
-    });
-
-    let count = 0;
-    for (const session of sessions) {
-      const hasExercise = (session.exercises ?? []).some(
-        (exercise) => exercise.exerciseName === exerciseName
-      );
-      if (!hasExercise) {
-        break;
-      }
-      count++;
-    }
-    return count;
-  }
-
   async getStreakSummary(): Promise<TrainingSessionStreakSummary> {
     const totalCount = await TrainingSessionModel.count();
 
@@ -318,5 +277,50 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
       success: deletedCount > 0,
       deletedId: deletedCount > 0 ? id : null,
     };
+  }
+
+  async findRecentExerciseFrequency(sessionCount: number): Promise<ExerciseFrequency[]> {
+    const sessions = await TrainingSessionModel.findAll({
+      order: [['date', 'DESC']],
+      limit: sessionCount,
+      include: [{ model: ExerciseModel, as: 'exercises', attributes: ['exerciseName'] }],
+    });
+
+    const countMap = new Map<string, number>();
+
+    for (const session of sessions) {
+      for (const exercise of session.exercises ?? []) {
+        const name = exercise.exerciseName.trim();
+        if (name.length > 0) {
+          countMap.set(name, (countMap.get(name) ?? 0) + 1);
+        }
+      }
+    }
+    return [...countMap.entries()]
+      .map(([exerciseName, count]) => ({
+        exerciseName,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count || a.exerciseName.localeCompare(b.exerciseName, 'ja'));
+  }
+
+  async findConsecutiveExerciseCount(exerciseName: string): Promise<number> {
+    const sessions = await TrainingSessionModel.findAll({
+      order: [['date', 'DESC']],
+      include: [{ model: ExerciseModel, as: 'exercises', attributes: ['exerciseName'] }],
+    });
+
+    let count = 0;
+    for (const session of sessions) {
+      const hasExercise = (session.exercises ?? []).some(
+        (exercise) => exercise.exerciseName.trim() === exerciseName
+      );
+
+      if (!hasExercise) {
+        break;
+      }
+      count++;
+    }
+    return count;
   }
 }
