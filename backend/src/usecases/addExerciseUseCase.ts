@@ -7,7 +7,7 @@ import { sequelize } from '@/config/database';
 const inputSchema = z
   .object({
     trainingSessionId: z.number().int().positive(),
-    exerciseName: z.string().min(1),
+    exerciseName: z.string().trim().min(1).max(255),
     weight: z.number().positive().nullable().optional(),
     reps: z.number().int().positive().nullable().optional(),
     durationSeconds: z.number().int().positive().nullable().optional(),

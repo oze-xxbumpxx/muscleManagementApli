@@ -64,11 +64,9 @@ function uniquePreservingOrder(dates: string[]): string[] {
 
 // 文字日付を1日ずつ比較する
 function isConsecutive(dateA: string, dateB: string): boolean {
-  // dateAがdateBの翌日かどうか
-  const a = new Date(dateA);
-  const b = new Date(dateB);
-  const diff = (a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24);
-  return diff === 1;
+  const olderDate = new Date(`${dateB}T00:00:00Z`);
+  olderDate.setUTCDate(olderDate.getUTCDate() + 1);
+  return olderDate.toISOString().slice(0, 10) === dateA;
 }
 
 function calcCurrentStreak(dates: string[]): number {
@@ -110,7 +108,7 @@ function calcLongestStreak(dates: string[]): number {
       current++;
       maxStreak = Math.max(maxStreak, current);
     } else {
-      break;
+      current = 1;
     }
   }
   return maxStreak;
@@ -286,20 +284,22 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
       include: [{ model: ExerciseModel, as: 'exercises', attributes: ['exerciseName'] }],
     });
 
-    const countMap = new Map<string, number>();
+    const sessionIdsByExerciseName = new Map<string, Set<number>>();
 
     for (const session of sessions) {
       for (const exercise of session.exercises ?? []) {
         const name = exercise.exerciseName.trim();
-        if (name.length > 0) {
-          countMap.set(name, (countMap.get(name) ?? 0) + 1);
-        }
+        if (!name) continue;
+
+        const sessionIds = sessionIdsByExerciseName.get(name) ?? new Set<number>();
+        sessionIds.add(session.id);
+        sessionIdsByExerciseName.set(name, sessionIds);
       }
     }
-    return [...countMap.entries()]
-      .map(([exerciseName, count]) => ({
+    return [...sessionIdsByExerciseName.entries()]
+      .map(([exerciseName, sessionIds]) => ({
         exerciseName,
-        count,
+        count: sessionIds.size,
       }))
       .sort((a, b) => b.count - a.count || a.exerciseName.localeCompare(b.exerciseName, 'ja'));
   }
@@ -307,6 +307,7 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
   async findConsecutiveExerciseCount(exerciseName: string): Promise<number> {
     const sessions = await TrainingSessionModel.findAll({
       order: [['date', 'DESC']],
+      limit: 100,
       include: [{ model: ExerciseModel, as: 'exercises', attributes: ['exerciseName'] }],
     });
 

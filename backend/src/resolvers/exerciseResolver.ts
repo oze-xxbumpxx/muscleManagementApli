@@ -1,10 +1,10 @@
 import { AddExerciseUseCase } from '@/usecases/addExerciseUseCase';
-import { UpdateExerciseUseCase } from '@/usecases/updateExerciseUseCase';
 import { DeleteExerciseUseCase } from '@/usecases/deleteExerciseUseCase';
-import { GetExerciseNamesUseCase } from '@/usecases/getExerciseNamesUseCase';
+import { GetExerciseConsecutiveCountUseCase } from '@/usecases/getExerciseConsecutiveCountUseCase';
 import { GetExerciseHistoryUsecase } from '@/usecases/getExerciseHistoryUsecase';
-import { GetExerciseConsecutiveCountUseCase } from '../usecases/getExerciseConsecutiveCountUseCase';
-import { ReorderExercisesUseCase } from '../usecases/reorderExercisesUseCase';
+import { GetExerciseNamesUseCase } from '@/usecases/getExerciseNamesUseCase';
+import { ReorderExercisesUseCase } from '@/usecases/reorderExercisesUseCase';
+import { UpdateExerciseUseCase } from '@/usecases/updateExerciseUseCase';
 
 type AddExerciseInput = Omit<Parameters<AddExerciseUseCase['execute']>[0], 'trainingSessionId'>;
 type UpdateExerciseInput = Omit<Parameters<UpdateExerciseUseCase['execute']>[0], 'id'>;

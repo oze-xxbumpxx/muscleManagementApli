@@ -7,7 +7,7 @@ import z from 'zod';
 const updateExerciseSchema = z
   .object({
     id: z.number().int().positive(),
-    exerciseName: z.string().min(1).max(255).optional(),
+    exerciseName: z.string().trim().min(1).max(255).optional(),
     weight: z.number().positive().nullable().optional(),
     reps: z.number().int().positive().nullable().optional(),
     durationSeconds: z.number().int().positive().nullable().optional(),
@@ -32,8 +32,7 @@ const updateExerciseSchema = z
 
     if (hasRepsKey && hasDurationKey) {
       const hasRepsValue = data.reps !== undefined && data.reps !== null;
-      const hasDurationValue =
-        data.durationSeconds !== undefined && data.durationSeconds !== null;
+      const hasDurationValue = data.durationSeconds !== undefined && data.durationSeconds !== null;
 
       if (hasRepsValue && hasDurationValue) {
         ctx.addIssue({

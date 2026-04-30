@@ -35,6 +35,16 @@ export class ReorderExercisesUseCase {
     }
 
     // session.exercisesのID集合とValidated.exerciseIdsの集合一致を検証
+    const ownedIds = new Set(session.exercises.map((exercise) => exercise.id));
+    const inputIds = new Set(validated.exerciseIds);
+
+    if (
+      ownedIds.size !== inputIds.size ||
+      validated.exerciseIds.some((exerciseId) => !ownedIds.has(exerciseId))
+    ) {
+      throw new Error('exerciseIds do not match the exercises in this session');
+    }
+
     const reorderInputs = validated.exerciseIds.map((id, index) => ({
       id,
       order: index + 1,

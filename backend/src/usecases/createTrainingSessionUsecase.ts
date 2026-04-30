@@ -8,7 +8,7 @@ import { dateStringSchema } from '@/domain/valueObjects/dateString';
 // Zod スキーマ（モジュールスコープに定義）
 const exerciseInputSchema = z
   .object({
-    exerciseName: z.string().min(1, 'Exercise name is required'),
+    exerciseName: z.string().trim().min(1, 'Exercise name is required').max(255),
     weight: z.number().positive().nullable().optional(),
     reps: z.number().int().positive().nullable().optional(),
     durationSeconds: z.number().int().positive().nullable().optional(),

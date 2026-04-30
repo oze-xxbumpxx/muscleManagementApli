@@ -602,6 +602,106 @@ backend/src/models/
 
 ---
 
+## 2026-04-29
+
+### `recentExerciseFrequency` / `exerciseConsecutiveCount` / `reorderExercises` 実装完了・動作確認
+
+#### やったこと
+
+1. **`exerciseConsecutiveCount` Resolver 配線**
+   - `index.ts` の TODO スタブ（`(): number => 0`）を削除
+   - `GetExerciseConsecutiveCountUseCase` を DI 登録し `exerciseResolver` へ注入
+   - `exerciseResolver.ts` に `exerciseConsecutiveCount` Query ハンドラを追加
+
+2. **`reorderExercises` Resolver 配線**
+   - `index.ts` の TODO スタブ（`(): [] => []`）を削除
+   - `ReorderExercisesUseCase` を DI 登録し `exerciseResolver` へ注入
+   - `exerciseResolver.ts` に `reorderExercises` Mutation ハンドラを追加（引数: `trainingSessionId`, `exerciseIds`）
+
+3. **`findRecentExerciseFrequency` 品質改善**（trainingSessionRepository.ts）
+   - 空白文字を `.trim()` で除去してから集計（名前表記ゆれ対策）
+   - 同一件数の種目で日本語ロケール順ソートを追加（`localeCompare('ja')`）
+
+4. **`findConsecutiveExerciseCount` 品質改善**（trainingSessionRepository.ts）
+   - 比較前に `.trim()` を適用し、前後空白による不一致を防止
+
+5. **`ExerciseRepository.reorder` リファクタ**
+   - 未使用の `Op` インポートを削除（`Op.in` → Sequelize 配列直渡しに変更）
+   - 空配列ガードを削除し UseCase 側で責任を持つ設計に整合
+   - メソッドをファイル末尾に移動（public API の順序を統一）
+
+6. **`index.ts` import 整理**
+   - 全 import をアルファベット順に並べ替え（ESLint import-order 準拠）
+   - `import 'dotenv/config'` を先頭に移動済みの順を維持
+
+#### 実施確認
+
+| 確認項目 | 結果 |
+|---------|------|
+| `npm run build` | ✅ 成功 |
+| `npm run lint` | ✅ 0 エラー・0 警告 |
+| GraphQL 正常系（`exerciseConsecutiveCount`） | ✅ セッション連続回数を正しく返す |
+| GraphQL 正常系（`recentExerciseFrequency`） | ✅ 頻度降順・同点は日本語名昇順 |
+| GraphQL 正常系（`reorderExercises`） | ✅ 並び順更新後の Exercise 配列を返す |
+| GraphQL 異常系（存在しない exerciseId） | ✅ UseCase 層でバリデーションエラーを返す |
+
+#### `reorderExercises` 整合性チェック内容
+
+`ReorderExercisesUseCase.execute` は以下を検証する：
+
+1. **trainingSessionId の存在確認** — 対象セッションが DB に存在しなければエラー
+2. **exerciseIds と実際の exercises の一致確認** — セッションに紐づく exercise の ID セットと引数の ID セットが完全一致しなければエラー（過不足どちらも NG）
+3. **重複 ID 禁止** — `exerciseIds` に同じ ID が複数含まれる場合はエラー
+4. 上記パスした後にトランザクション内で `exerciseRepository.reorder` を呼び出し、order を一括更新
+
+#### 学んだこと
+
+- `Op.in` は Sequelize で配列を `where` に渡すと自動的に `IN` 句に変換されるため、明示的な `Op.in` は不要
+- `trainingSessionRepository` で空文字・空白トリムを Repository 層でやる設計はドメインモデルを汚さず適切
+- TODO スタブを残したままにすると GraphQL スキーマと実装が乖離するため、UseCase ができた時点で即座に配線する
+
+#### 次のステップ
+- フロントエンド側での `exerciseConsecutiveCount` / `recentExerciseFrequency` / `reorderExercises` の Apollo Client 組み込み
+
+---
+
+## 2026-04-30
+
+### Phase 2 バックエンドレビュー指摘の修正完了
+
+#### やったこと
+
+1. **C-1: `reorderExercises` 所有権検証を実装**（`reorderExercisesUseCase.ts`）
+   - `ownedIds`（セッションに紐づく exercise ID セット）と `inputIds`（引数）の集合一致チェックを追加
+   - 過不足・別セッション ID の混入・存在しない ID をすべて弾く
+
+2. **C-2: `findConsecutiveExerciseCount` に `limit: 100` を追加**（`trainingSessionRepository.ts`）
+   - 全件フルスキャンを廃止し、直近 100 セッションに絞る
+
+3. **C-3: `exerciseName` の trim を保存側で統一**（UseCase 3ファイル）
+   - `addExerciseUseCase` / `createTrainingSessionUseCase` / `updateExerciseUseCase` の Zod スキーマに `.trim().min(1).max(255)` を追加
+   - 保存時に trim を保証することで、比較側の不整合を解消
+
+4. **W-1: `recentExerciseFrequency` 集計をセッション数ベースに変更**（`trainingSessionRepository.ts`）
+   - `Map<string, number>` → `Map<string, Set<number>>` に変更
+   - 1 セッション内の重複種目を除外し、「種目が登場したセッション数」を返すように修正
+
+5. **W-3: `isConsecutive` を UTC 固定演算に変更**（`trainingSessionRepository.ts`）
+   - `new Date(dateB)` → `new Date(\`${dateB}T00:00:00Z\`)` + `setUTCDate` で DST 問題を解消
+
+6. **W-4: `calcLongestStreak` のロジックバグ修正**（`trainingSessionRepository.ts`）
+   - 連続が途切れた際の `break` を `current = 1` に変更し、途中に長い連続がある場合も正しく検出できるように修正
+
+7. **I-3: `exerciseResolver.ts` の import パスを `@/` に統一**（`exerciseResolver.ts`）
+
+#### 学んだこと
+
+- `Map<string, Set<number>>` パターンは「重複排除しながら集計」する典型的な実装で、種目の登場セッション数など UX に合った集計に有効
+- UseCase の Zod スキーマで `.trim()` を保証することで、Repository 側は trim を意識せず純粋な等値比較にできる
+- `calcLongestStreak` の `break` → `current = 1` は「最長連続」と「最初の連続」を混同するよくあるバグ
+
+---
+
 ## 学習メモテンプレート
 
 ### YYYY-MM-DD
