@@ -1,3 +1,4 @@
+import { ExerciseStatsContainer } from '@/containers/ExerciseStatsContainer';
 import { StreakInfoContainer } from '@/containers/StreakInfoContainer';
 import { TrainingCalendarContainer } from '@/containers/TrainingCalendarContainer';
 
@@ -8,6 +9,7 @@ export function DashboardPage(): React.JSX.Element {
       <div className="mt-6 grid gap-6">
         <StreakInfoContainer />
         <TrainingCalendarContainer />
+        <ExerciseStatsContainer />
       </div>
     </div>
   );

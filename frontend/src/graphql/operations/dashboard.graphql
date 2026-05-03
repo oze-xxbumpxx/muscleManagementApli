@@ -21,3 +21,14 @@ query TrainingDaysInMonth($year: Int!, $month: Int!) {
     exerciseCount
   }
 }
+
+query RecentExerciseFrequency($sessionCount: Int) {
+  recentExerciseFrequency(sessionCount: $sessionCount) {
+    exerciseName
+    count
+  }
+}
+
+query ExerciseConsecutiveCount($exerciseName: String!) {
+  exerciseConsecutiveCount(exerciseName: $exerciseName)
+}

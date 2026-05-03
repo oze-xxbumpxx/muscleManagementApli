@@ -314,7 +314,7 @@ export class TrainingSessionRepository implements ITrainingSessionRepository {
     let count = 0;
     for (const session of sessions) {
       const hasExercise = (session.exercises ?? []).some(
-        (exercise) => exercise.exerciseName.trim() === exerciseName
+        (exercise) => exercise.exerciseName === exerciseName
       );
 
       if (!hasExercise) {
