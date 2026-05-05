@@ -33,7 +33,11 @@ function isTrainingSessionHistoryShape(value: unknown): value is TrainingSession
     return false;
   }
 
-  return typeof value.bodyWeight === 'number' || value.bodyWeight === null;
+  return (
+    typeof value.bodyWeight === 'number' ||
+    typeof value.bodyWeight === 'string' ||
+    value.bodyWeight === null
+  );
 }
 export class ExerciseRepository implements IExerciseRepository {
   async create(input: ExerciseCreateInput, transaction?: Transaction): Promise<Exercise> {

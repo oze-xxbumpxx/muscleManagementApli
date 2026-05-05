@@ -1,0 +1,11 @@
+query ExerciseHistory($exerciseName: String!, $limit: Int) {
+  exerciseHistory(exerciseName: $exerciseName, limit: $limit) {
+    date
+    exerciseName
+    weight
+    reps
+    durationSeconds
+    sets
+    bodyWeight
+  }
+}
