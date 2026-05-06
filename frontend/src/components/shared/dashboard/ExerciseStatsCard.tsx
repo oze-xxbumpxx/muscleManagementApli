@@ -1,6 +1,7 @@
 import { ExerciseConsecutiveCountDocument } from '@/graphql/generated/graphql';
 import type { ExerciseFrequency } from '@/hooks/useExerciseStats';
 import { useQuery } from '@apollo/client';
+import { Link } from 'react-router-dom';
 
 export interface ExerciseStatsCardProps {
   readonly frequencies: readonly ExerciseFrequency[];
@@ -14,7 +15,6 @@ interface ExerciseConsecutiveItemProps {
   readonly frequencyCount: number;
   readonly sessionCount: number;
 }
-
 function formatConsecutive(
   loading: boolean,
   error: Error | undefined,
@@ -40,7 +40,12 @@ function ExerciseConsecutiveItem(props: ExerciseConsecutiveItemProps): React.JSX
 
   return (
     <li className="grid gap-2 border-t border-slate-100 py-3 first:border-t-0 sm:grid-cols-[minmax(0,1fr)_minmax(120px,180px)_4rem_5rem] sm:items-center">
-      <span className="font-medium text-slate-900">{props.exerciseName}</span>
+      <Link
+        to={`/exercises/${encodeURIComponent(props.exerciseName)}`}
+        className="font-medium text-slate-900 underline hover:text-emerald-700"
+      >
+        {props.exerciseName}
+      </Link>
       <span
         className="h-2 rounded-full bg-slate-100"
         role="progressbar"

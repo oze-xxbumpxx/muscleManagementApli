@@ -1,4 +1,4 @@
-import { ChartMode, ExerciseHistoryEntry } from '@/hooks/useExerciseHistory';
+import type { ChartMode, ExerciseHistoryEntry } from '@/hooks/useExerciseHistory';
 import {
   CartesianGrid,
   Line,
@@ -9,7 +9,7 @@ import {
   YAxis,
 } from 'recharts';
 
-export interface ExerciseHistroyChartProps {
+export interface ExerciseHistoryChartProps {
   readonly entries: readonly ExerciseHistoryEntry[];
   readonly mode: ChartMode;
   readonly onModeChange: (mode: ChartMode) => void;
@@ -40,41 +40,32 @@ function toChartPoint(entry: ExerciseHistoryEntry): ChartPoint {
   };
 }
 
-function hasDurationData(entries: readonly { readonly durationSeconds: number | null }[]): boolean {
-  return entries.some(entry => entry.durationSeconds !== null);
+function getModeLabel(mode: ChartMode): string {
+  return mode === 'weight' ? '重量(kg)' : '回数';
 }
 
-function isDurationOnly(
-  entries: readonly {
-    readonly weight: number | null;
-    readonly reps: number | null;
-    readonly durationSeconds: number | null;
-  }[]
-): boolean {
+function ExerciseHistoryChartMessage(props: { readonly message: string }): React.JSX.Element {
   return (
-    entries.some(entry => entry.durationSeconds !== null) &&
-    entries.every(entry => entry.weight === null && entry.reps === null)
+    <section className="rounded-lg border border-slate-200 bg-white p-4">
+      <p className="text-slate-600">{props.message}</p>
+    </section>
   );
 }
-function getModeLabel(mode: ChartMode): string {
-  return mode === 'weight' ? '重量（kg）' : '回数';
-}
-
-export function ExerciseHistoryChart(props: ExerciseHistroyChartProps): React.JSX.Element {
+export function ExerciseHistoryChart(props: ExerciseHistoryChartProps): React.JSX.Element {
   if (props.loading) {
-    return <p className="text-slate-600">読み込み中...</p>;
+    return <ExerciseHistoryChartMessage message="読み込み中..." />;
   }
 
   if (props.error !== undefined) {
-    return <p className="text-slate-600">データを取得できませんでした。</p>;
+    return <ExerciseHistoryChartMessage message="データを取得できませんでした。" />;
   }
 
   if (props.entries.length === 0) {
-    return <p className="text-slate-600">記録がありません</p>;
+    return <ExerciseHistoryChartMessage message="記録がありません" />;
   }
 
   if (!props.hasWeightData && !props.hasRepsData) {
-    return <p className="text-slate-600">グラフ表示できる重量・回数の記録がありません</p>;
+    return <ExerciseHistoryChartMessage message="グラフ表示できる重量・回数の記録がありません" />;
   }
 
   const data = props.entries.map(toChartPoint);
@@ -124,7 +115,7 @@ export function ExerciseHistoryChart(props: ExerciseHistroyChartProps): React.JS
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis dataKey="date" tickFormatter={formatDateLabel} stroke="#64748b" />
             <YAxis stroke="#64748b" />
-            <Tooltip labelFormatter={label => String(label)} />
+            <Tooltip labelFormatter={label => formatDateLabel(String(label))} />
             <Line
               type="monotone"
               dataKey={props.mode}

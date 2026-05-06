@@ -8,7 +8,8 @@ function decodeExerciseName(name: string | undefined): string {
 
   try {
     return decodeURIComponent(name);
-  } catch {
+  } catch (error) {
+    console.warn('decodeURIComponent failed', error);
     return name;
   }
 }

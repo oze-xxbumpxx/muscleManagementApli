@@ -1,6 +1,8 @@
-import { ExerciseHistoryChart } from '@/components/exercise/ExerciseHistoryChart';
+import { ExerciseHistoryChart } from '@/components/shared/exercise/ExerciseHistoryChart';
 import { useToast } from '@/context/ToastContext';
-import { ChartMode, useExerciseHistory } from '@/hooks/useExerciseHistory';
+import { useExerciseHistory } from '@/hooks/useExerciseHistory';
+import type { ChartMode } from '@/hooks/useExerciseHistory';
+
 import { useEffect, useState } from 'react';
 
 export interface ExerciseHistoryContainerProps {
@@ -8,10 +10,6 @@ export interface ExerciseHistoryContainerProps {
 }
 
 const DEFAULT_HISTORY_LIMIT = 30;
-
-function hasDurationData(entries: readonly { readonly durationSeconds: number | null }[]): boolean {
-  return entries.some(entry => entry.durationSeconds !== null);
-}
 
 function hasWeightData(entries: readonly { readonly weight: number | null }[]): boolean {
   return entries.some(entry => entry.weight !== null);
@@ -26,9 +24,8 @@ export function ExerciseHistoryContainer(props: ExerciseHistoryContainerProps): 
   const { entries, loading, error } = useExerciseHistory(props.exerciseName, DEFAULT_HISTORY_LIMIT);
   const [mode, setMode] = useState<ChartMode>('weight');
 
-  const hasDuration = hasDurationData(entries);
-  const hasWeight = hasDuration ? false : hasWeightData(entries);
-  const hasReps = hasDuration ? false : hasRepsData(entries);
+  const hasWeight = hasWeightData(entries);
+  const hasReps = hasRepsData(entries);
 
   useEffect(() => {
     if (error !== undefined) {
@@ -48,11 +45,13 @@ export function ExerciseHistoryContainer(props: ExerciseHistoryContainerProps): 
     // 重量データがなくて回数データがある場合は回数モードに切り替える
     if (mode === 'weight' && !hasWeight && hasReps) {
       setMode('reps');
+      return;
     }
 
     // 回数データがなくて重量データがある場合は重量モードに切り替える
     if (mode === 'reps' && !hasReps && hasWeight) {
       setMode('weight');
+      return;
     }
   }, [hasReps, hasWeight, loading, mode]);
 

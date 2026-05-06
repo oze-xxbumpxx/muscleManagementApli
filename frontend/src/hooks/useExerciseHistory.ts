@@ -1,4 +1,6 @@
-import { ExerciseHistoryDocument, ExerciseHistoryQuery } from '@/graphql/generated/graphql';
+import { ExerciseHistoryDocument } from '@/graphql/generated/graphql';
+import type { ExerciseHistoryQuery } from '@/graphql/generated/graphql';
+
 import { useQuery } from '@apollo/client';
 
 type QueryExerciseHistoryEntry = ExerciseHistoryQuery['exerciseHistory'][number];

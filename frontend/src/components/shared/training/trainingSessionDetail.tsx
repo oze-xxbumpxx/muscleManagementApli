@@ -32,7 +32,12 @@ export function TrainingSessionDetail(props: TrainingSessionDetailProps): React.
         <ul className="mt-2 divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
           {session.exercises.map(ex => (
             <li key={ex.id} className="px-4 py-3 text-sm">
-              <span className="font-medium text-slate-900">{ex.exerciseName}</span>
+              <Link
+                to={`/exercises/${encodeURIComponent(ex.exerciseName)}`}
+                className="font-medium text-slate-900 underline hover:text-emerald-700"
+              >
+                {ex.exerciseName}
+              </Link>
               <span className="ml-2 text-slate-600">
                 {ex.sets} セット
                 {ex.reps != null && ` · ${ex.reps} 回`}
