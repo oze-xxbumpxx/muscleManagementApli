@@ -1,5 +1,6 @@
 import type { TrainingSessionQuery } from '@/graphql/generated/graphql';
 import { Link } from 'react-router-dom';
+import { IntervalTimer } from '../timer/IntervalTimer';
 
 type TrainingSessionDetailModel = NonNullable<TrainingSessionQuery['trainingSession']>;
 
@@ -14,10 +15,10 @@ export function TrainingSessionDetail(props: TrainingSessionDetailProps): React.
     <div className="space-y-4">
       <div>
         <h2 className="text-lg font-semibold text-slate-900">{session.date}</h2>
-        {session.bodyWeight != null && (
+        {session.bodyWeight !== null && session.bodyWeight !== undefined && (
           <p className="mt-1 text-sm text-slate-600">体重: {session.bodyWeight} kg</p>
         )}
-        {session.notes != null && session.notes !== '' && (
+        {session.notes !== null && session.notes !== undefined && session.notes !== '' && (
           <p className="mt-2 text-sm text-slate-700">{session.notes}</p>
         )}
       </div>
@@ -40,13 +41,16 @@ export function TrainingSessionDetail(props: TrainingSessionDetailProps): React.
               </Link>
               <span className="ml-2 text-slate-600">
                 {ex.sets} セット
-                {ex.reps != null && ` · ${ex.reps} 回`}
-                {ex.durationSeconds != null && ` · ${ex.durationSeconds} 秒`}
-                {ex.weight != null && ` · ${ex.weight} kg`}
+                {ex.reps !== null && ex.reps !== undefined && ` · ${ex.reps} 回`}
+                {ex.durationSeconds !== null &&
+                  ex.durationSeconds !== undefined &&
+                  ` · ${ex.durationSeconds} 秒`}
+                {ex.weight !== null && ex.weight !== undefined && ` · ${ex.weight} kg`}
               </span>
-              {ex.notes != null && ex.notes !== '' && (
+              {ex.notes !== null && ex.notes !== undefined && ex.notes !== '' && (
                 <p className="mt-1 text-slate-600">{ex.notes}</p>
               )}
+              <IntervalTimer defaultSeconds={90} />
             </li>
           ))}
         </ul>
