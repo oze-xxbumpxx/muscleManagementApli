@@ -1,6 +1,6 @@
 import { useIntervalTimer } from '@/hooks/useIntervalTimer';
 import type { TimerStatus } from '@/hooks/useIntervalTimer';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 export interface IntervalTimerProps {
   readonly defaultSeconds?: number;
@@ -9,10 +9,6 @@ export interface IntervalTimerProps {
 const DEFAULT_SECONDS = 90;
 const MIN_SECONDS = 1;
 const MAX_SECONDS = 5999;
-
-interface WindowWithWebkitAudioContext extends Window {
-  readonly webkitAudioContext?: typeof AudioContext;
-}
 
 function formatTime(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
@@ -34,9 +30,7 @@ function getTimeColor(status: TimerStatus, remainingSeconds: number): string {
 }
 
 function getAudioContextConstructor(): typeof AudioContext | undefined {
-  const audioWindow: WindowWithWebkitAudioContext = window;
-
-  return window.AudioContext ?? audioWindow.webkitAudioContext;
+  return window.AudioContext;
 }
 
 function playBeep(): void {
@@ -47,18 +41,22 @@ function playBeep(): void {
   }
 
   const context = new AudioContextConstructor();
-  const osillator = context.createOscillator();
+  const oscillator = context.createOscillator();
   const gain = context.createGain();
 
-  osillator.connect(gain);
+  oscillator.connect(gain);
   gain.connect(context.destination);
 
-  osillator.frequency.value = 880;
+  oscillator.frequency.value = 880;
   gain.gain.setValueAtTime(0.3, context.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.5);
 
-  osillator.start(context.currentTime);
-  osillator.stop(context.currentTime + 0.5);
+  oscillator.onended = () => {
+    void context.close();
+  };
+
+  oscillator.start(context.currentTime);
+  oscillator.stop(context.currentTime + 0.5);
 }
 
 function normalizeSeconds(value: number): number {
@@ -74,18 +72,18 @@ export function IntervalTimer(props: IntervalTimerProps): React.JSX.Element {
     normalizeSeconds(props.defaultSeconds ?? DEFAULT_SECONDS)
   );
 
-  const handleComplete = useCallback(() => {
+  function handleComplete(): void {
     playBeep();
-  }, []);
+  }
 
   const timer = useIntervalTimer({
     initialSeconds: inputSeconds,
     onComplete: handleComplete,
   });
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
     setInputSeconds(normalizeSeconds(event.target.valueAsNumber));
-  };
+  }
 
   const timeColorClassName = getTimeColor(timer.status, timer.remainingSeconds);
   const isInputDisabled = timer.status !== 'idle';

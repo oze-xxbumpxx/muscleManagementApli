@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 export type TimerStatus = 'idle' | 'running' | 'paused';
 
 export interface UseIntervalTimerOptions {
+  // 1以上の整数秒。呼び出し側で正規化済みの値を渡す。
   readonly initialSeconds: number;
   readonly onComplete: () => void;
 }
@@ -30,6 +31,12 @@ export function useIntervalTimer(options: UseIntervalTimerOptions): UseIntervalT
     }
   }, [options.initialSeconds, status]);
 
+  const initialSecondsRef = useRef(options.initialSeconds);
+
+  useEffect(() => {
+    initialSecondsRef.current = options.initialSeconds;
+  }, [options.initialSeconds]);
+
   useEffect(() => {
     if (status !== 'running') {
       return;
@@ -41,7 +48,7 @@ export function useIntervalTimer(options: UseIntervalTimerOptions): UseIntervalT
           window.clearInterval(intervalId);
           setStatus('idle');
           onCompleteRef.current();
-          return options.initialSeconds;
+          return initialSecondsRef.current;
         }
         return prev - 1;
       });
@@ -49,7 +56,7 @@ export function useIntervalTimer(options: UseIntervalTimerOptions): UseIntervalT
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [options.initialSeconds, status]);
+  }, [status]);
 
   const start = useCallback(() => {
     setStatus('running');
@@ -61,8 +68,7 @@ export function useIntervalTimer(options: UseIntervalTimerOptions): UseIntervalT
 
   const reset = useCallback(() => {
     setStatus('idle');
-    setRemainingSeconds(options.initialSeconds);
-  }, [options.initialSeconds]);
+  }, []);
 
   return {
     remainingSeconds,
